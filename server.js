@@ -5,25 +5,30 @@ const path = require("path");
 const fs = require("fs");
 
 const app = express();
-const PORT = 3000;
+
+// Use Render's port if deployed, otherwise 3000 locally
+const PORT = process.env.PORT || 3000;
 
 // --- Middleware ---
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files (HTML, CSS, JS, images, uploads)
+// Serve static files
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/covers", express.static(path.join(__dirname, "covers")));
+app.use("/assets", express.static(path.join(__dirname, "image")));
 
 // --- Ensure directories exist ---
-if (!fs.existsSync("./uploads")) fs.mkdirSync("./uploads");
-if (!fs.existsSync("./covers")) fs.mkdirSync("./covers");
+["uploads", "covers"].forEach(dir => {
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+});
 
 // --- Database ---
-const db = new sqlite3.Database("./waka.db", (err) => {
+const dbFile = "./waka.db";
+const db = new sqlite3.Database(dbFile, (err) => {
   if (err) console.error("DB error:", err);
-  else console.log("Connected to SQLite DB");
+  else console.log(`Connected to SQLite DB: ${dbFile}`);
 });
 
 // Create tables if they don't exist
@@ -51,14 +56,14 @@ db.serialize(() => {
   )`);
 });
 
-// --- Multer setup for uploads ---
+// --- Multer setup for file uploads ---
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     if (file.fieldname === "audio") cb(null, "./uploads");
     else if (file.fieldname === "cover") cb(null, "./covers");
+    else cb(null, "./uploads");
   },
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
     const name = Date.now() + "-" + file.originalname.replace(/\s+/g, "_");
     cb(null, name);
   },
@@ -67,7 +72,7 @@ const upload = multer({ storage });
 
 // --- Routes ---
 
-// Upload track
+// Upload a track
 app.post("/api/upload", upload.fields([
   { name: "audio", maxCount: 1 },
   { name: "cover", maxCount: 1 }
@@ -112,7 +117,7 @@ app.get("/api/tracks", (req, res) => {
   });
 });
 
-// Get artists (only those who have tracks)
+// Get artists with tracks
 app.get("/api/artists", (req, res) => {
   db.all(
     `SELECT artist, COUNT(*) as trackCount, MAX(cover) as cover 
@@ -157,11 +162,5 @@ app.post("/api/login", (req, res) => {
   );
 });
 
-
-// Serve static assets from the 'assets' folder
-app.use('/assets', express.static(path.join(__dirname, 'image')));
-
 // --- Start server ---
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
