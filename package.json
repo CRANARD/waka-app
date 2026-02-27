@@ -1,4 +1,4 @@
-{{
+{
   "name": "waka",
   "version": "1.0.0",
   "description": "A simple Express server",
