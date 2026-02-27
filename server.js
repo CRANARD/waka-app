@@ -1,7 +1,11 @@
+// ===============================
 // server.js
+// ===============================
+
 const express = require("express");
 const cors = require("cors");
 const sqlite3 = require("sqlite3").verbose();
+const bcrypt = require("bcrypt");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
@@ -9,136 +13,157 @@ const fs = require("fs");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// === Middleware ===
+// ===============================
+// Middleware
+// ===============================
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve static files
-app.use(express.static(path.join(__dirname, "public")));
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-app.use("/covers", express.static(path.join(__dirname, "covers")));
+app.use(express.static("public"));
 
-// Ensure directories exist
-["uploads", "covers"].forEach(dir => {
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+// ===============================
+// Database Setup
+// ===============================
+const db = new sqlite3.Database("./database.db", (err) => {
+    if (err) {
+        console.error("Database error:", err.message);
+    } else {
+        console.log("Connected to SQLite database.");
+    }
 });
 
-// === Database ===
-const db = new sqlite3.Database("./waka.db", (err) => {
-  if (err) console.error("DB Error:", err);
-  else console.log("Connected to SQLite database.");
-});
+// Create Users Table if not exists
+db.run(`
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        fullname TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+`);
 
-// Create tables if not exist
-db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE,
-    email TEXT UNIQUE,
-    password TEXT,
-    bio TEXT,
-    join_date TEXT DEFAULT (datetime('now'))
-  )`);
-
-  db.run(`CREATE TABLE IF NOT EXISTS tracks (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT,
-    artist TEXT,
-    album TEXT,
-    release_date TEXT,
-    language TEXT,
-    country TEXT,
-    genre TEXT,
-    explicit TEXT,
-    bpm INTEGER,
-    file TEXT,
-    cover TEXT,
-    plays INTEGER DEFAULT 0,
-    top_monday INTEGER DEFAULT 0,
-    uploaded_by INTEGER,
-    FOREIGN KEY(uploaded_by) REFERENCES users(id)
-  )`);
-});
-
-// === Multer setup for uploads ===
+// ===============================
+// File Upload Setup (Optional)
+// ===============================
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    if (file.fieldname === "audio") cb(null, "./uploads");
-    else if (file.fieldname === "cover") cb(null, "./covers");
-    else cb(null, "./uploads");
-  },
-  filename: (req, file, cb) => {
-    const name = Date.now() + "-" + file.originalname.replace(/\s+/g, "_");
-    cb(null, name);
-  }
-});
-const upload = multer({ storage });
-
-// === Routes ===
-
-// Upload a track
-app.post("/api/upload", upload.fields([
-  { name: "audio", maxCount: 1 },
-  { name: "cover", maxCount: 1 }
-]), (req, res) => {
-  try {
-    const data = req.body;
-    const audioFile = req.files.audio[0].filename;
-    const coverFile = req.files.cover ? req.files.cover[0].filename : null;
-
-    db.run(`INSERT INTO tracks 
-      (title, artist, album, release_date, language, country, genre, explicit, bpm, file, cover, top_monday, uploaded_by)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        data.title,
-        data.artist,
-        data.album,
-        data.release_date,
-        data.language,
-        data.country,
-        data.genre,
-        data.explicit,
-        data.bpm,
-        audioFile,
-        coverFile,
-        data.top_monday || 0,
-        data.uploaded_by // <-- IMPORTANT: store user ID here
-      ],
-      function(err) {
-        if (err) return res.status(500).json({ error: "DB insert failed", details: err });
-        res.json({ message: "Track uploaded successfully!" });
-      }
-    );
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Upload failed" });
-  }
+    destination: function (req, file, cb) {
+        const uploadPath = "./uploads";
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath);
+        }
+        cb(null, uploadPath);
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
 });
 
-// Get portfolio of a specific user
-app.get("/api/user-portfolio/:userId", (req, res) => {
-  const userId = req.params.userId;
+const upload = multer({ storage: storage });
 
-  // Fetch user info
-  db.get("SELECT id, username, bio, join_date FROM users WHERE id = ?", [userId], (err, user) => {
-    if (err) return res.status(500).json({ error: "Failed to fetch user info" });
-    if (!user) return res.json({ user: null, portfolio: [] });
+// ===============================
+// ROUTES
+// ===============================
 
-    // Fetch tracks uploaded by this user
-    db.all("SELECT id, title, artist, album, release_date, country, genre, file as audio, cover as img, 'song' as type FROM tracks WHERE uploaded_by = ? ORDER BY id DESC", 
-      [userId], 
-      (err, tracks) => {
-        if (err) return res.status(500).json({ error: "Failed to fetch user's tracks" });
-        res.json({ user, portfolio: tracks });
-      }
-    );
-  });
+// Health Check
+app.get("/", (req, res) => {
+    res.json({ message: "Server is running successfully 🚀" });
 });
 
-// Existing routes (top songs, albums, Malawi, Monday, login, register, play...) remain the same
-// ... [You can keep all other API routes from your original server.js here] ...
+// ===============================
+// REGISTER ROUTE
+// ===============================
+app.post("/register", async (req, res) => {
+    const { fullname, email, password } = req.body;
 
-// === Start server ===
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    if (!fullname || !email || !password) {
+        return res.status(400).json({ message: "All fields are required" });
+    }
+
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const query = `
+            INSERT INTO users (fullname, email, password)
+            VALUES (?, ?, ?)
+        `;
+
+        db.run(query, [fullname, email, hashedPassword], function (err) {
+            if (err) {
+                if (err.message.includes("UNIQUE")) {
+                    return res.status(400).json({ message: "Email already exists" });
+                }
+                return res.status(500).json({ message: "Database error" });
+            }
+
+            res.status(201).json({
+                message: "User registered successfully",
+                userId: this.lastID
+            });
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+// ===============================
+// LOGIN ROUTE
+// ===============================
+app.post("/login", (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ message: "Email and password required" });
+    }
+
+    const query = `SELECT * FROM users WHERE email = ?`;
+
+    db.get(query, [email], async (err, user) => {
+        if (err) {
+            return res.status(500).json({ message: "Database error" });
+        }
+
+        if (!user) {
+            return res.status(400).json({ message: "Invalid email or password" });
+        }
+
+        const match = await bcrypt.compare(password, user.password);
+
+        if (!match) {
+            return res.status(400).json({ message: "Invalid email or password" });
+        }
+
+        res.json({
+            message: "Login successful",
+            user: {
+                id: user.id,
+                fullname: user.fullname,
+                email: user.email
+            }
+        });
+    });
+});
+
+// ===============================
+// Example File Upload Route
+// ===============================
+app.post("/upload", upload.single("file"), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    res.json({
+        message: "File uploaded successfully",
+        file: req.file.filename
+    });
+});
+
+// ===============================
+// START SERVER
+// ===============================
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
