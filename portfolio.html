@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Portfolio - Waka Multimedia</title>
+<style>
+body, html {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: url('pexels-bri-schneiter-28802-346529.jpg') no-repeat center center fixed;
+  background-size: cover;
+  color: white;
+  overflow-x: hidden;
+}
+
+/* User Info */
+.userInfo {
+  max-width: 800px;
+  margin: 40px auto 20px;
+  padding: 20px;
+  background: rgba(0,0,0,0.4);
+  border-radius: 15px;
+  text-align: center;
+}
+.userInfo h2 { margin: 0 0 10px 0; }
+.userInfo p { margin: 5px 0; opacity: 0.9; }
+
+/* Container */
+.portfolioContainer {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+}
+
+/* Title */
+.portfolioTitle { 
+  text-align: center;
+  font-size: 2.8em;
+  margin-bottom: 40px;
+  text-shadow: 2px 2px 8px black;
+}
+
+/* Filter Tabs */
+.filterTabs {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+  gap: 20px;
+}
+.filterTabs button {
+  padding: 10px 25px;
+  border-radius: 25px;
+  border: none;
+  background: rgba(29,185,84,0.7);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.filterTabs button:hover, .filterTabs button.active {
+  background: rgba(29,185,84,1);
+  transform: scale(1.05);
+}
+
+/* Grid */
+.portfolioGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 25px;
+}
+
+/* Card */
+.portfolioCard {
+  opacity: 0;
+  transform: translateY(30px);
+  animation: fadeIn 0.6s forwards;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(12px);
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.4);
+  border: 3px solid rgba(255,255,255,0.3);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.portfolioCard:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 0 40px rgba(29,185,84,0.8);
+}
+
+/* Card Image */
+.portfolioCard img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+
+/* Card Text */
+.portfolioCard h3 { margin: 0 0 10px 0; font-size: 1.5em; }
+.portfolioCard p { font-size: 14px; opacity: 0.8; line-height: 1.4; }
+
+/* Card Buttons */
+.portfolioCard a, .portfolioCard audio, .portfolioCard video {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+/* Neon Buttons */
+.portfolioCard a {
+  padding: 8px 0;
+  background: rgba(29,185,84,0.8);
+  color: white;
+  font-weight: bold;
+  text-decoration: none;
+  transition: 0.3s;
+}
+.portfolioCard a:hover {
+  background: rgba(29,185,84,1);
+  transform: scale(1.05);
+}
+
+/* Fade-in Animation */
+@keyframes fadeIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media(max-width: 768px){
+  .portfolioGrid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+  .userInfo { margin: 20px; padding: 15px; }
+}
+</style>
+</head>
+<body>
+
+<div class="userInfo" id="userInfo" style="display:none;">
+  <!-- User info will populate here -->
+</div>
+
+<div class="portfolioContainer" id="portfolioContainer" style="display:none;">
+  <h1 class="portfolioTitle">My Portfolio</h1>
+
+  <!-- Filter Tabs -->
+  <div class="filterTabs">
+    <button class="active" data-filter="all">All</button>
+    <button data-filter="song">Songs</button>
+    <button data-filter="album">Albums</button>
+    <button data-filter="malawi">Malawi Projects</button>
+  </div>
+
+  <!-- Grid -->
+  <div class="portfolioGrid" id="portfolioGrid">
+    <!-- Cards will be inserted dynamically -->
+  </div>
+</div>
+
+<script>
+// Replace this with actual logged-in user ID from login
+const loggedInUserId = 1; // Example, dynamically set after login
+
+async function loadUserPortfolio(userId){
+  try {
+    const response = await fetch(`/api/user-portfolio/${userId}`);
+    const data = await response.json();
+
+    if(!data.user) return; // No user, show nothing
+
+    // Show user info
+    const userInfoDiv = document.getElementById('userInfo');
+    userInfoDiv.style.display = 'block';
+    userInfoDiv.innerHTML = `
+      <h2>${data.user.username}</h2>
+      <p><strong>Bio:</strong> ${data.user.bio || 'N/A'}</p>
+      <p><strong>Joined:</strong> ${new Date(data.user.join_date).toLocaleDateString()}</p>
+    `;
+
+    // Show portfolio container
+    const portfolioContainer = document.getElementById('portfolioContainer');
+    portfolioContainer.style.display = 'block';
+
+    // Populate grid dynamically
+    const grid = document.getElementById('portfolioGrid');
+    grid.innerHTML = ""; // clear any previous
+
+    data.portfolio.forEach((p, i) => {
+      const card = document.createElement('div');
+      card.className = 'portfolioCard';
+      card.style.animationDelay = `${i*0.2}s`; // stagger animation
+      card.dataset.type = p.type;
+      card.innerHTML = `
+        <img src="${p.img}" alt="${p.title}">
+        <h3>${p.title}</h3>
+        <p>${p.artist || ''}</p>
+        ${p.audio ? `<audio controls src="/uploads/${p.audio}"></audio>` : ''}
+        <a href="#">View Project</a>
+      `;
+      grid.appendChild(card);
+    });
+
+    // Filter functionality
+    const filterButtons = document.querySelectorAll('.filterTabs button');
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const filter = btn.dataset.filter;
+        document.querySelectorAll('.portfolioCard').forEach(card => {
+          if(filter === 'all' || card.dataset.type === filter) {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+
+  } catch(err){
+    console.error("Failed to load portfolio:", err);
+  }
+}
+
+// Load portfolio on page load
+loadUserPortfolio(loggedInUserId);
+</script>
+
+</body>
+</html>

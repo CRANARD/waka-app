@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Upload - Waka Multimedia</title>
+<style>
+body {
+  margin:0;
+  font-family: Arial, sans-serif;
+  background:url('pexels-eberhardgross-1624438.jpg') no-repeat center center fixed;
+  background-size:cover;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+
+/* FORM BOX */
+.uploadBox {
+  height:8in;
+  width:6in;
+  background:rgba(255,255,255,0.15);
+  backdrop-filter: blur(12px);
+  border-radius:15px;
+  padding:30px 20px;
+  box-shadow:0 0 25px rgba(0,0,0,0.4);
+  border: 3px solid rgba(255,255,255,0.3);
+  animation: glow 2s infinite alternate;
+}
+
+/* GLOW ANIMATION */
+@keyframes glow {
+  from { border-color: rgba(255,255,255,0.3); box-shadow:0 0 25px rgba(0,0,0,0.4);}
+  to { border-color: rgba(29,185,84,0.8); box-shadow:0 0 40px rgba(29,185,84,0.8);}
+}
+
+h2 {
+  text-align:center;
+  color:white;
+  margin-bottom:20px;
+  text-shadow:1px 1px 3px black;
+}
+
+/* INPUTS */
+.uploadBox input, .uploadBox select, .uploadBox button {
+  width:100%;
+  padding:10px;
+  margin:10px 0;
+  border-radius:8px;
+  border:none;
+  outline:none;
+  font-size:16px;
+}
+
+.uploadBox select {
+  cursor:pointer;
+}
+
+.uploadBox button {
+  background: rgba(29,185,84,0.8);
+  color:white;
+  font-weight:bold;
+  transition:0.3s;
+  cursor:pointer;
+}
+
+.uploadBox button:hover {
+  background: rgba(29,185,84,1);
+  transform: scale(1.05);
+}
+</style>
+</head>
+<body>
+
+<div class="uploadBox">
+  <h2>Upload Music</h2>
+  <form id="uploadForm" enctype="multipart/form-data">
+    <input type="text" name="title" placeholder="Song Title" required>
+    <input type="text" name="artist" placeholder="Artist / Featured Artists" required>
+    <input type="text" name="album" placeholder="Album Name" >
+    <input type="date" name="release_date" placeholder="Release Date">
+
+    <select name="language" required>
+      <option value="">Select Language</option>
+      <option value="english">English</option>
+      <option value="chichewa">Chichewa</option>
+      <option value="french">French</option>
+      <option value="spanish">Spanish</option>
+      <option value="other">Other</option>
+    </select>
+
+    <select name="country" required>
+      <option value="">Select Country</option>
+      <option value="malawi">Malawi</option>
+      <option value="us">USA</option>
+      <option value="uk">UK</option>
+      <option value="france">France</option>
+      <option value="south_africa">South Africa</option>
+      <option value="other">Other</option>
+    </select>
+
+    <select name="genre" required>
+      <option value="">Select Genre</option>
+      <option value="pop">Pop</option>
+      <option value="hiphop">Hip-Hop</option>
+      <option value="rnb">R&B</option>
+      <option value="gospel">Gospel</option>
+      <option value="reggae">Reggae</option>
+      <option value="rock">Rock</option>
+      <option value="jazz">Jazz</option>
+      <option value="blues">Blues</option>
+      <option value="classical">Classical</option>
+      <option value="country">Country</option>
+      <option value="electronic">Electronic</option>
+      <option value="dance">Dance</option>
+      <option value="metal">Metal</option>
+      <option value="indie">Indie</option>
+      <option value="folk">Folk</option>
+      <option value="latin">Latin</option>
+      <option value="kpop">K-Pop</option>
+      <option value="afrobeat">Afrobeat</option>
+      <option value="malawian">Malawian</option>
+      <option value="other">Other</option>
+    </select>
+
+    <select name="explicit">
+      <option value="">Explicit Content?</option>
+      <option value="yes">Yes</option>
+      <option value="no">No</option>
+    </select>
+
+    <input type="number" name="bpm" placeholder="BPM / Tempo">
+    <input type="file" name="audio" accept="audio/*" required>
+    <input type="file" name="cover" accept="image/*">
+
+    <button type="submit">Upload</button>
+  </form>
+</div>
+
+<script>
+const form = document.getElementById('uploadForm');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(form);
+
+  try {
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      body: fd
+    });
+
+    const data = await res.json();
+
+    if(res.ok){
+      // Success popup
+      alert("🎉 Congratulations! Your music has been uploaded.");
+      window.location.href = "home.html"; // Redirect to home
+    } else {
+      alert("❌ Upload failed: " + (data.error || "Unknown error"));
+    }
+  } catch(err){
+    console.error(err);
+    alert("❌ Upload failed: " + err.message);
+  }
+});
+</script>
+
+</body>
+</html>

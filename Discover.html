@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Waka Charts</title>
+
+<style>
+body {
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:url('pexels-catota-3756766.jpg') no-repeat center center fixed;
+  background-size:cover;
+}
+
+/* ROW CONTAINER */
+.chartsRow {
+  display:flex;
+  gap:25px;
+  padding:40px;
+  justify-content:flex-start;
+  align-items:flex-start;
+}
+
+/* CHART BOX */
+.chartBox {
+  width:5in;
+  height:8in;
+  background:rgba(255,255,255,0.15);
+  backdrop-filter:blur(12px);
+  border-radius:15px;
+  box-shadow:0 0 25px rgba(0,0,0,.4);
+  padding:20px;
+  overflow-y:auto;
+}
+
+/* TITLE */
+.chartTitle {
+  text-align:center;
+  color:white;
+  margin-bottom:15px;
+  text-shadow:1px 1px 3px black;
+}
+
+/* ITEM */
+.item {
+  display:flex;
+  align-items:center;
+  padding:8px;
+  border-radius:8px;
+  margin-bottom:6px;
+}
+
+/* TOP 10 */
+.item.top10 {
+  background:rgba(29,185,84,.25);
+}
+
+/* RANK */
+.rank {
+  width:35px;
+  color:white;
+  font-weight:bold;
+}
+
+/* COVER */
+.cover {
+  width:50px;
+  height:50px;
+  margin:0 8px;
+  border-radius:6px;
+  object-fit:cover;
+}
+
+.meta {
+  color:white;
+  font-size:14px;
+}
+.meta small {
+  opacity:.7;
+}
+</style>
+</head>
+<body>
+<div class="chartsRow">
+  <!-- TOP MADE ON MONDAY SONGS -->
+  <div class="chartBox">
+    <h2 class="chartTitle">Top Made On Monday Songs</h2>
+    <div id="topMondayChart"></div>
+  </div>
+
+  <!-- TOP SONGS -->
+  <div class="chartBox">
+    <h2 class="chartTitle">Top Songs</h2>
+    <div id="topSongsChart"></div>
+  </div>
+
+  <!-- TOP ALBUMS -->
+  <div class="chartBox">
+    <h2 class="chartTitle">Top Albums</h2>
+    <div id="albumsChart"></div>
+  </div>
+
+  <!-- TOP MALAWI -->
+  <div class="chartBox">
+    <h2 class="chartTitle">Top Malawi</h2>
+    <div id="malawiChart"></div>
+  </div>
+</div>
+
+<script>
+async function loadCharts(){
+
+  // Top Made On Monday
+  const topMonday = await fetch('/api/top-monday').then(r=>r.json());
+  document.getElementById('topMondayChart').innerHTML =
+    topMonday.map((s,i)=>`
+      <div class="item ${i<10?'top10':''}">
+        <div class="rank">${i+1}</div>
+        <img class="cover" src="${s.cover}">
+        <div class="meta">
+          <div>${s.title}</div>
+          <small>${s.artist}</small>
+        </div>
+      </div>
+    `).join('');
+
+  // Top Songs
+  const topSongs = await fetch('/api/top-songs').then(r=>r.json());
+  document.getElementById('topSongsChart').innerHTML =
+    topSongs.map((s,i)=>`
+      <div class="item ${i<10?'top10':''}">
+        <div class="rank">${i+1}</div>
+        <img class="cover" src="${s.cover}">
+        <div class="meta">
+          <div>${s.title}</div>
+          <small>${s.artist}</small>
+        </div>
+      </div>
+    `).join('');
+
+  // Top Albums
+  const albums = await fetch('/api/top-albums').then(r=>r.json());
+  document.getElementById('albumsChart').innerHTML =
+    albums.map((s,i)=>`
+      <div class="item ${i<10?'top10':''}">
+        <div class="rank">${i+1}</div>
+        <img class="cover" src="${s.cover}">
+        <div class="meta">
+          <div>${s.title}</div>
+          <small>${s.artist}</small>
+        </div>
+      </div>
+    `).join('');
+
+  // Top Malawi
+  const malawi = await fetch('/api/top-malawi').then(r=>r.json());
+  document.getElementById('malawiChart').innerHTML =
+    malawi.map((s,i)=>`
+      <div class="item ${i<10?'top10':''}">
+        <div class="rank">${i+1}</div>
+        <img class="cover" src="${s.cover}">
+        <div class="meta">
+          <div>${s.title}</div>
+          <small>${s.artist}</small>
+        </div>
+      </div>
+    `).join('');
+}
+
+loadCharts();
+</script>
+
+</body>
+</html>
