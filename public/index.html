@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Waka Multimedia</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+
+/* --- Full Page Background Image --- */
+body {
+  background: url('/image/okay.png') no-repeat center center fixed;
+  background-size: cover;
+  position: relative;
+  z-index: 0;
+  color: var(--text); /* keep your text visible */
+  font-family: Inter, system-ui;
+}
+
+/* Dark overlay for contrast */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5); /* adjust opacity 0.3-0.7 */
+  z-index: -1;
+}
+
+/* Make your panels slightly transparent to show background */
+.app .main,
+.sidebar,
+.rightbar,
+.fixed-player,
+#wakaPanel,
+#settingsPanel,
+#profilePanel {
+  background: rgba(24,26,34,0.85); /* semi-transparent panels */
+  backdrop-filter: blur(12px); /* nice glass effect */
+}
+:root{
+  --bg:white;
+  --panel:#111218;
+  --panel2:#181a22;
+  --accent:#ff6a00;
+  --accent2:#ff9a3c;
+  --text:#f1f3f8;
+  --muted:#9aa0b3;
+  --radius:16px;
+}
+
+
+
+.app{
+  display:grid;
+  grid-template-columns:250px 1fr 320px;
+  gap:20px;
+  padding:22px;
+  max-width:1600px;
+  margin:auto;
+}
+
+.sidebar{
+  background:linear-gradient(180deg,#141621,#0f1017);
+  border-radius:var(--radius);
+  padding:18px;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  box-shadow:0 10px 30px rgba(0,0,0,.35);
+}
+.logo{
+  font-weight:700;
+  font-size:1.4rem;
+  letter-spacing:.5px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;
+  color:transparent;
+  cursor:pointer;
+  transition: transform .2s, opacity .2s;
+}
+.logo:hover{
+  transform: scale(1.1);
+  opacity:0.85;
+}
+.nav-links{list-style:none;display:flex;flex-direction:column;gap:6px}
+.nav-links a{
+  color:var(--muted);
+  text-decoration:none;
+  padding:10px 12px;
+  border-radius:10px;
+  display:block;
+  transition:.2s;
+}
+.nav-links a:hover,.nav-links a.active{
+  background:linear-gradient(90deg,rgba(255,106,0,.15),transparent);
+  color:white;
+}
+
+.main{
+  background:linear-gradient(180deg,#141621,#0f1017);
+  border-radius:var(--radius);
+  padding:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,.35);
+}
+.rightbar{
+  background:linear-gradient(180deg,#141621,#0f1017);
+  border-radius:var(--radius);
+  padding:18px;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  box-shadow:0 10px 30px rgba(0,0,0,.35);
+}
+
+.section-title{
+  font-size:1.15rem;
+  margin-bottom:12px;
+  font-weight:600;
+}
+
+.music-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
+  gap:16px;
+}
+.music-card{
+  background:linear-gradient(180deg,#1b1d27,#151720);
+  border-radius:14px;
+  padding:12px;
+  cursor:pointer;
+  transition:.3s;
+  position:relative;
+  overflow:hidden;
+  box-shadow:0 6px 15px rgba(0,0,0,.25);
+}
+.music-card:hover{
+  transform:translateY(-6px) scale(1.03);
+  box-shadow:0 12px 25px rgba(0,0,0,.45);
+}
+.music-card-cover{
+  width:100%;
+  aspect-ratio:1;
+  border-radius:10px;
+  overflow:hidden;
+  margin-bottom:8px;
+  position:relative;
+}
+.music-card-cover img{width:100%;height:100%;object-fit:cover}
+.music-card-cover::after{
+  content:"▶";
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:2rem;
+  background:rgba(0,0,0,.45);
+  opacity:0;
+  transition:.2s;
+}
+.music-card:hover .music-card-cover::after{opacity:1}
+.music-card h4{font-size:.95rem}
+.music-card p{font-size:.8rem;color:var(--muted)}
+
+.rb-img{
+  width:100%;
+  border-radius:12px;
+  overflow:hidden;
+  position:relative;
+}
+.rb-img img{width:100%;display:block}
+.rb-img::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,transparent,rgba(0,0,0,.7));
+}
+
+/* --- Waka Panel --- */
+#wakaPanel{
+  position:fixed;
+  top:70px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(24,26,34,0.95);
+  backdrop-filter:blur(12px);
+  border-radius:20px;
+  padding:18px 28px;
+  width:320px;
+  display:none;
+  box-shadow:0 15px 40px rgba(0,0,0,0.5);
+  z-index:999;
+}
+#wakaPanel h3{
+  margin-bottom:12px;
+  color:var(--accent);
+  text-align:center;
+}
+#wakaPanel p{
+  color:var(--text);
+  font-size:0.9rem;
+  text-align:center;
+}
+
+/* --- Glass-style fixed player --- */
+.fixed-player{
+  position:fixed;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:18px;
+  width:92%;
+  max-width:950px;
+  background: rgba(24,26,34,0.85);
+  backdrop-filter: blur(15px);
+  border-radius:24px;
+  padding:14px 20px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  box-shadow:0 15px 45px rgba(0,0,0,0.5);
+  border:1px solid rgba(255,255,255,0.08);
+  transition: transform .25s;
+}
+.fixed-player:hover{
+  transform: translateX(-50%) translateY(-2px);
+}
+.player-cover{
+  width:56px;height:56px;border-radius:12px;overflow:hidden
+}
+.player-cover img{width:100%;height:100%;object-fit:cover}
+.player-info h4{
+  font-size:1rem;
+  margin-bottom:2px;
+}
+.player-info p{
+  font-size:.78rem;
+  color:var(--muted);
+}
+.player-controls button{
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border:none;
+  color:white;
+  width:36px;height:36px;
+  border-radius:50%;
+  cursor:pointer;
+  box-shadow:0 4px 14px rgba(255,106,0,.5);
+  transition:.2s;
+}
+.player-controls button:hover{
+  transform:scale(1.1);
+  box-shadow:0 6px 18px rgba(255,106,0,.6);
+}
+.player-controls input[type=range]{
+  width:80px;
+  cursor:pointer;
+}
+.timeline-bar{
+  flex:1;height:4px;background:#2a2d38;border-radius:2px;cursor:pointer
+}
+.timeline-progress{
+  height:100%;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  width:0;
+  border-radius:2px
+}
+
+/* --- Upload page styles --- */
+.uploadBox {
+  width:100%;
+  max-width:500px;
+  margin:30px auto;
+  background:linear-gradient(180deg,#1b1d27,#151720);
+  border-radius:15px;
+  padding:30px 20px;
+  box-shadow:0 0 25px rgba(0,0,0,0.6);
+  border: 2px solid rgba(255,255,255,0.1);
+}
+.uploadBox h2 {
+  text-align:center;
+  color:white;
+  margin-bottom:20px;
+}
+.uploadBox input, .uploadBox select, .uploadBox button {
+  width:100%;
+  padding:10px;
+  margin:10px 0;
+  border-radius:8px;
+  border:none;
+  outline:none;
+  font-size:16px;
+  background: #111218;
+  color: white;
+}
+.uploadBox select { cursor:pointer; }
+.uploadBox button {
+  background: linear-gradient(135deg, #1db954, #1ed760);
+  color:white;
+  font-weight:bold;
+  transition:0.3s;
+  cursor:pointer;
+}
+.uploadBox button:hover {
+  background: linear-gradient(135deg, #1ed760, #1db954);
+  transform: scale(1.05);
+}
+
+/* --- Artist Detail Panel --- */
+#artistDetail{
+  display:none;
+  margin-top:20px;
+  background: rgba(24,26,34,0.9);
+  backdrop-filter: blur(10px);
+  border-radius:20px;
+  padding:20px;
+  box-shadow:0 15px 40px rgba(0,0,0,.45);
+  transition: all 0.35s ease;
+}
+#artistDetail h3{
+  font-size:1.3rem;
+  margin-bottom:6px;
+}
+#artistDetail p{
+  color:var(--muted);
+  font-size:0.95rem;
+}
+#artistTracksGrid .music-card{
+  margin-top:10px;
+}
+
+/* --- Login Page --- */
+#loginBox {
+  width: 100%;
+  max-width:400px;
+  margin: 40px auto;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 40px;
+  border-radius: 12px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+}
+#loginBox h2{
+  margin-bottom:20px;
+  color:white;
+  text-shadow:1px 1px 2px black;
+}
+#loginBox input{
+  width:90%;
+  padding:10px;
+  margin:10px 0;
+  border:none;
+  border-radius:6px;
+}
+#loginBox button{
+  width:95%;
+  padding:10px;
+  margin-top:10px;
+  border:none;
+  border-radius:6px;
+  background: rgba(255,255,255,0.3);
+  font-weight:bold;
+  cursor:pointer;
+  transition:0.3s;
+}
+#loginBox button:hover{
+  background: rgba(255,255,255,0.5);
+}
+#forgotPassword{
+  background:none;
+  border:none;
+  color:black;
+  text-decoration:underline;
+  cursor:pointer;
+  font-size:14px;
+  margin-top:10px;
+  padding:0;
+}
+
+/* --- Responsive --- */
+@media(max-width:1200px){.app{grid-template-columns:230px 1fr}.rightbar{display:none}}
+@media(max-width:800px){.app{grid-template-columns:1fr}.sidebar{flex-direction:row;overflow:auto}}
+.music-card .track-buttons {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  width: calc(100% - 20px);
+  justify-content: center;
+}
+
+.music-card:hover .track-buttons {
+  opacity: 1;
+}
+
+.track-buttons button {
+  flex: 1;
+  padding: 6px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.download-btn {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: white;
+}
+
+.download-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 18px rgba(255,106,0,0.6);
+}
+
+.share-btn {
+  background: var(--panel2);
+  color: var(--text);
+  border: 1px solid var(--accent);
+}
+
+.share-btn:hover {
+  transform: scale(1.05);
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: white;
+}
+</style>
+</head>
+<body>
+
+<audio id="audioPlayer"></audio>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="logo">WAKA MULTIMEDIA</div>
+    <ul class="nav-links">
+      <li><a href="#" onclick="showPage('home')">Home</a></li>
+      <li><a href="#" onclick="showPage('discover')">Discover</a></li>
+      <li><a href="#" onclick="showPage('upload')">Upload</a></li>
+      <li><a href="#" onclick="showPage('portfolio')">Portfolio</a></li>
+      <li><a href="#" onclick="showPage('charts')">Charts</a></li>
+      <li><a href="#" onclick="showPage('login')">Login</a></li>
+      <li><a href="#" onclick="showPage('register')">Register</a></li>
+      <li><a href="#" onclick="showPage('artists')">Artists</a></li>
+    </ul>
+  </div>
+
+  <div class="main">
+    <!-- Home Page -->
+    <div id="home-page" class="page-content">
+      <h2 class="section-title">WELCOME HOME</h2>
+      <div class="music-grid" id="featuredTracks"></div>
+      <h3 class="section-title" style="margin-top:18px">For you</h3>
+      <div class="music-grid" id="moreRelated"></div>
+    </div>
+
+    <!-- Discover Page -->
+    <div id="discover-page" class="page-content" style="display:none">
+      <h2 class="section-title">Discover</h2>
+      <input id="searchInput" placeholder="Search" style="width:100%;padding:11px;border-radius:10px;border:none;background:var(--panel2);color:white;margin-bottom:12px">
+      <div class="music-grid" id="discoverGrid"></div>
+    </div>
+
+    <!-- Upload Page -->
+    <div id="upload-page" class="page-content" style="display:none">
+      <div class="uploadBox">
+        <h2>Upload Music</h2>
+        <form id="uploadForm">
+          <input type="text" name="title" placeholder="Song Title" required>
+          <input type="text" name="artist" placeholder="Artist / Featured Artists" required>
+          <input type="text" name="album" placeholder="Album Name">
+          <input type="date" name="release_date">
+          <select name="language" required>
+            <option value="">Select Language</option>
+            <option value="english">English</option>
+            <option value="chichewa">Chichewa</option>
+            <option value="french">French</option>
+            <option value="spanish">Spanish</option>
+            <option value="other">Other</option>
+          </select>
+          <select name="country" required>
+            <option value="">Select Country</option>
+            <option value="malawi">Malawi</option>
+            <option value="us">USA</option>
+            <option value="uk">UK</option>
+            <option value="france">France</option>
+            <option value="south_africa">South Africa</option>
+            <option value="other">Other</option>
+          </select>
+          <select name="genre" required>
+            <option value="">Select Genre</option>
+            <option value="pop">Pop</option>
+            <option value="hiphop">Hip-Hop</option>
+            <option value="rnb">R&B</option>
+            <option value="gospel">Gospel</option>
+            <option value="reggae">Reggae</option>
+            <option value="rock">Rock</option>
+            <option value="jazz">Jazz</option>
+            <option value="blues">Blues</option>
+            <option value="classical">Classical</option>
+            <option value="country">Country</option>
+            <option value="electronic">Electronic</option>
+            <option value="dance">Dance</option>
+            <option value="metal">Metal</option>
+            <option value="indie">Indie</option>
+            <option value="folk">Folk</option>
+            <option value="latin">Latin</option>
+            <option value="kpop">K-Pop</option>
+            <option value="afrobeat">Afrobeat</option>
+            <option value="malawian">Malawian</option>
+            <option value="other">Other</option>
+          </select>
+          <select name="explicit">
+            <option value="">Explicit Content?</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+          <input type="number" name="bpm" placeholder="BPM / Tempo">
+		  <h1>Add music cover image<h1/>
+		             <input type="file" name="cover" accept="cover/*" placeholder ="cover image"required>
+					 <h1>Add music file<h1/>
+          <input type="file" name="audio" accept="audio/*" required>
+          
+          <button type="submit">Upload</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Portfolio Page -->
+    <div id="portfolio-page" class="page-content" style="display:none">
+      <h2 class="section-title">Your uploads</h2>
+      <div class="music-grid" id="portfolioGrid"></div>
+    </div>
+
+    <!-- Charts Page -->
+    <div id="charts-page" class="page-content" style="display:none">
+      <h2 class="section-title">Top charts</h2>
+      <div class="music-grid" id="chartsGrid"></div>
+    </div>
+
+    <!-- Artists Page -->
+    <div id="artists-page" class="page-content" style="display:none">
+      <h2 class="section-title">Artists</h2>
+      <input id="artistSearch" placeholder="Search Artists..." 
+             style="width:100%;padding:11px;border-radius:10px;border:none;background:var(--panel2);color:white;margin-bottom:12px">
+      <div class="music-grid" id="artistsGrid"></div>
+      <div id="artistDetail">
+        <div style="display:flex; gap:20px; align-items:center; margin-bottom:12px;">
+          <div style="width:120px; height:120px; overflow:hidden; border-radius:12px;">
+            <img id="artistDetailImg" src="" style="width:100%;height:100%;object-fit:cover">
+          </div>
+          <div>
+            <h3 id="artistDetailName"></h3>
+            <p id="artistDetailDesc"></p>
+          </div>
+        </div>
+        <div>
+          <h4 style="margin-bottom:8px;">Tracks</h4>
+          <div class="music-grid" id="artistTracksGrid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Login Page -->
+    <div id="login-page" class="page-content" style="display:none; text-align:center;">
+      <div id="loginBox">
+        <h2>Login</h2>
+        <form id="loginForm">
+          <input name="username" placeholder="Username" required>
+          <input name="password" type="password" placeholder="Password" required>
+          <button type="submit">Login</button>
+        </form>
+        <button id="forgotPassword">Forgot password?</button>
+      </div>
+    </div>
+	
+	
+    <!-- Login Page -->
+    <div id="settings-page" class="page-content" style="display:block; text-align:center;">
+      <div id="loginBox">
+        <h2>Login</h2>
+        <form id="loginForm">
+          <input name="username" placeholder="Username" required>
+          <input name="password" type="password" placeholder="Password" required>
+          <button type="submit">Login</button>
+        </form>
+        <button id="forgotPassword">Forgot password?</button>
+      </div>
+    </div>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+    <!-- Register Page -->
+    <div id="register-page" class="page-content" style="display:none; text-align:center;">
+      <div id="loginBox">
+        <h2>Register</h2>
+        <form id="registerForm">
+          <input name="username" placeholder="Username" required>
+          <input name="email" type="email" placeholder="Email" required>
+          <input name="password" type="password" placeholder="Password" required>
+          <button type="submit">Register</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="rightbar">
+    <h3 class="section-title">Top Artist</h3>
+    <div id="topArtistsGrid" class="music-grid"></div>
+  </div>
+</div>
+
+<!-- Fixed Player -->
+<div class="fixed-player">
+  <div class="player-cover"><img id="playerCoverImg" src=""></div>
+  <div class="player-info">
+    <h4 id="nowPlayingTitle">Nothing playing</h4>
+    <p id="nowPlayingArtist"></p>
+    <div class="timeline-bar" onclick="seekTrack(event)">
+      <div class="timeline-progress" id="timelineProgress"></div>
+    </div>
+  </div>
+  <div class="player-controls" style="display:flex;align-items:center;gap:6px;">
+    <button onclick="previousTrack()">⏮</button>
+    <button onclick="playPause()">▶</button>
+    <button onclick="nextTrack()">⏭</button>
+    <button id="repeatBtn" onclick="toggleRepeat()">🔁</button>
+    <button id="volumeBtn" onclick="toggleMute()">🔊</button>
+    <input type="range" min="0" max="1" step="0.01" value="0.5" onchange="changeVolume(this.value)">
+  </div>
+</div>
+<script>
+let pages = ["home","discover","upload","portfolio","charts","login","register","artists"];
+function showPage(page){
+  pages.forEach(p=>document.getElementById(p+"-page").style.display="none");
+  document.getElementById(page+"-page").style.display="block";
+}
+
+// --- Music Player ---
+let tracks = [];
+let currentTrack = null;
+let isPlaying = false;
+let repeatMode = 0;
+let isMuted = false;
+const audio = document.getElementById("audioPlayer");
+
+// Load tracks from server
+async function loadTracks(){
+  try{
+    const res = await fetch("/api/tracks");
+    tracks = await res.json();
+    renderTracks("featuredTracks", tracks);
+    renderTracks("moreRelated", tracks);
+    renderTracks("discoverGrid", tracks);
+    renderTracks("portfolioGrid", tracks);
+    renderTracks("chartsGrid", tracks);
+    loadArtists(); // load artists after tracks
+  }catch(err){console.error("Failed to load tracks:",err);}
+}
+
+// Render music cards
+function renderTracks(containerId, tracksList){
+  const container = document.getElementById(containerId);
+  if(!container) return;
+  container.innerHTML="";
+  tracksList.forEach((track,idx)=>{
+    const card = document.createElement("div");
+    card.className="music-card";
+    card.onclick = ()=>playTrack(idx);
+    card.innerHTML=`
+      <div class="music-card-cover"><img src="covers/${track.cover||'default.jpg'}"></div>
+      <h4>${track.title}</h4>
+      <p>${track.artist}</p>
+      <div class="track-buttons">
+        <button class="download-btn">Download</button>
+        <button class="share-btn">Share</button>
+      </div>
+    `;
+    container.appendChild(card);
+
+    // Event listeners for buttons
+    const downloadBtn = card.querySelector(".download-btn");
+    const shareBtn = card.querySelector(".share-btn");
+
+    downloadBtn.addEventListener("click", e=>{
+      e.stopPropagation();
+      setTimeout(()=>{
+        const a = document.createElement("a");
+        a.href = `uploads/${track.file}`;
+        a.download = track.file;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }, 900); // 0.9s delay
+    });
+
+    shareBtn.addEventListener("click", e=>{
+      e.stopPropagation();
+      const songUrl = `${window.location.origin}/uploads/${track.file}`;
+      navigator.clipboard.writeText(songUrl)
+        .then(()=> alert("Song link copied to clipboard!"))
+        .catch(()=> alert("Failed to copy link"));
+    });
+  });
+}
+// Play track
+function playTrack(idx){
+  currentTrack=tracks[idx];
+  document.getElementById("playerCoverImg").src=currentTrack.cover?"covers/"+currentTrack.cover:"";
+  document.getElementById("nowPlayingTitle").textContent=currentTrack.title;
+  document.getElementById("nowPlayingArtist").textContent=currentTrack.artist;
+  audio.src="uploads/"+currentTrack.file;
+  audio.play();
+  isPlaying=true;
+  updatePlayerButton();
+}
+
+// Play/pause toggle
+function playPause(){
+  if(!currentTrack) return;
+  if(audio.paused){audio.play(); isPlaying=true;}
+  else {audio.pause(); isPlaying=false;}
+  updatePlayerButton();
+}
+
+// Next / Prev
+function previousTrack(){ if(!currentTrack) return; let idx=tracks.indexOf(currentTrack); playTrack((idx-1+tracks.length)%tracks.length);}
+function nextTrack(){ if(!currentTrack) return; let idx=tracks.indexOf(currentTrack); playTrack((idx+1)%tracks.length);}
+
+// Update button
+function updatePlayerButton(){document.querySelector(".player-controls button:nth-child(2)").textContent=isPlaying?"⏸":"▶";}
+
+// Seek
+function seekTrack(e){
+  const bar=e.currentTarget;
+  const percent=e.offsetX/bar.offsetWidth;
+  audio.currentTime=audio.duration*percent;
+  document.getElementById("timelineProgress").style.width=(percent*100)+"%";
+}
+audio.ontimeupdate=()=>{if(audio.duration){document.getElementById("timelineProgress").style.width=(audio.currentTime/audio.duration*100)+"%";}}
+
+// Repeat / Volume
+function toggleRepeat(){ repeatMode=(repeatMode+1)%3; document.getElementById("repeatBtn").textContent=(repeatMode===0)?"🔁":(repeatMode===1)?"🔂":"🔁1"; }
+function toggleMute(){ isMuted=!isMuted; audio.muted=isMuted; document.getElementById("volumeBtn").textContent=isMuted?"🔇":"🔊";}
+function changeVolume(val){ audio.volume=val; isMuted=(val==0); document.getElementById("volumeBtn").textContent=isMuted?"🔇":"🔊";}
+
+// --- Artists ---
+async function loadArtists(){
+  try{
+    const res = await fetch("/api/artists");
+    const artists = await res.json();
+    renderArtists("artistsGrid", artists);
+    renderArtists("topArtistsGrid", artists.slice(0,5));
+  }catch(err){console.error("Failed to load artists:", err);}
+}
+
+function renderArtists(containerId, artistList){
+  const container = document.getElementById(containerId);
+  if(!container) return;
+  container.innerHTML="";
+  artistList.forEach(artist=>{
+    const card = document.createElement("div");
+    card.className="music-card";
+    card.innerHTML = `<div class="music-card-cover"><img src="covers/${artist.cover||'default.jpg'}"></div>
+                      <h4>${artist.name}</h4>
+                      <p>${artist.trackCount} tracks</p>`;
+    container.appendChild(card);
+  });
+}
+
+// --- Upload form
+document.getElementById("uploadForm")?.addEventListener("submit",async(e)=>{
+  e.preventDefault();
+  const form = e.target;
+  const data = new FormData(form);
+  try{
+    const res = await fetch("/api/upload",{method:"POST",body:data});
+    const result = await res.json();
+    alert(result.message);
+    form.reset();
+    loadTracks();
+  }catch(err){console.error(err);}
+});
+
+// --- Register form
+document.getElementById("registerForm")?.addEventListener("submit", async(e)=>{
+  e.preventDefault();
+  const form = e.target;
+  const data = new FormData(form);
+  try{
+    const res = await fetch("/api/register", {
+      method:"POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: form.username.value,
+        email: form.email.value,
+        password: form.password.value
+      })
+    });
+    const result = await res.json();
+    if(result.error) alert(result.error);
+    else { alert(result.message); form.reset(); }
+  }catch(err){console.error(err);}
+});
+
+// --- Login form
+document.getElementById("loginForm")?.addEventListener("submit", async(e)=>{
+  e.preventDefault();
+  const form = e.target;
+  try{
+    const res = await fetch("/api/login", {
+      method:"POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: form.username.value,
+        password: form.password.value
+      })
+    });
+    const result = await res.json();
+    if(result.error) alert(result.error);
+    else { alert(result.message); form.reset(); }
+  }catch(err){console.error(err);}
+});
+
+// --- Initialize ---
+loadTracks();
+</script>
+</body>
+</html>
+<!-- Profile and Settings Icons -->
+<div class="profile-icon"></div>
+<div class="settings-icon">
+  <div></div> <!-- center circle for gear -->
+</div>
+
+<style>
+:root {
+  --accent: #ff6a00;
+  --text: #f1f3f8;
+}
+
+/* --- Shared icon styles --- */
+.profile-icon, .settings-icon {
+  width: 50px;
+  height: 50px;
+  position: fixed;
+  left: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+  z-index: 1000;
+}
+
+/* Hover effect for both */
+.profile-icon:hover, .settings-icon:hover {
+  transform: scale(1.1);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+
+/* --- Positioning --- */
+.profile-icon {
+  bottom: 90px; /* stacked above settings */
+  background: var(--accent);
+}
+
+/* Profile silhouette using pseudo-elements */
+.profile-icon::before,
+.profile-icon::after {
+  content:"";
+  position: absolute;
+  background: var(--text);
+  border-radius: 50%;
+}
+.profile-icon::before {
+  width: 18px;
+  height: 18px;
+  top: 8px;
+}
+.profile-icon::after {
+  width: 28px;
+  height: 12px;
+  bottom: 8px;
+}
+
+/* Settings Icon */
+.settings-icon {
+  bottom: 20px;
+  background: rgba(24,26,34,0.85);
+}
+
+/* Gear teeth using pseudo-elements */
+.settings-icon::before,
+.settings-icon::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 4px;
+  background: var(--accent);
+  border-radius: 2px;
+  top: 50%;
+  left: 50%;
+  transform-origin: center;
+}
+.settings-icon::before { transform: translate(-50%, -50%) rotate(0deg);}
+.settings-icon::after { transform: translate(-50%, -50%) rotate(90deg);}
+
+/* Center circle of gear */
+.settings-icon div {
+  width: 12px;
+  height: 12px;
+  background: var(--accent);
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Spin animation on hover */
+.settings-icon:hover {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg);}
+  100% { transform: rotate(360deg);}
+}
+</style>
+
+<!-- Settings Icon -->
+<div class="settings-icon">
+  <div></div>
+</div>
+
+<!-- Profile Settings Panel -->
+<div id="profilePanel">
+  <h3>Your Profile</h3>
+  <form id="profileForm">
+    <label>Username</label>
+    <input type="text" name="username" id="profileUsername" required>
+    <label>Email</label>
+    <input type="email" name="email" id="profileEmail" required>
+    <label>Password</label>
+    <input type="password" name="password" id="profilePassword" required>
+    <button type="submit">Save Changes</button>
+  </form>
+</div>
+
+<style>
+/* --- Profile Panel --- */
+#profilePanel {
+  position: fixed;
+  bottom: 80px; /* just above the settings icon */
+  left: 20px;
+  width: 250px;
+  background: rgba(24,26,34,0.95);
+  backdrop-filter: blur(12px);
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 12px 35px rgba(0,0,0,0.6);
+  display: none;
+  z-index: 2000;
+}
+
+#profilePanel h3 {
+  color: var(--accent);
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+#profilePanel form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#profilePanel input {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: none;
+  outline: none;
+  background: var(--panel2);
+  color: white;
+}
+
+#profilePanel button {
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+#profilePanel button:hover {
+  transform: scale(1.05);
+}
+
+/* Reuse existing settings icon styles from previous CSS */
+</style>
+
+<script>
+// Show/hide profile panel when clicking the settings icon
+const settingsIcon = document.querySelector(".settings-icon");
+const profilePanel = document.getElementById("profilePanel");
+
+settingsIcon.addEventListener("click", ()=>{
+  profilePanel.style.display = profilePanel.style.display === "block" ? "none" : "block";
+});
+
+// Example: populate profile with user info (replace with your real logged-in data)
+const user = {
+  username: "john_doe",
+  email: "john@example.com",
+  password: "password123"
+};
+
+document.getElementById("profileUsername").value = user.username;
+document.getElementById("profileEmail").value = user.email;
+document.getElementById("profilePassword").value = user.password;
+
+// Handle profile form submission
+document.getElementById("profileForm").addEventListener("submit", e=>{
+  e.preventDefault();
+  // Update user object (in real app, send to server via fetch)
+  user.username = document.getElementById("profileUsername").value;
+  user.email = document.getElementById("profileEmail").value;
+  user.password = document.getElementById("profilePassword").value;
+  alert("Profile updated successfully!");
+  profilePanel.style.display = "none";
+});
+</script>
+<!-- Settings Icon -->
+<div class="settings-icon">
+  <div></div> <!-- center circle for gear -->
+</div>
+
+<!-- Settings Panel -->
+<div id="settingsPanel">
+  <div class="settings-tabs">
+    <button class="tab-btn active" data-tab="profileTab">Profile</button>
+    <button class="tab-btn" data-tab="playerTab">Player</button>
+    <button class="tab-btn" data-tab="notificationsTab">Notifications</button>
+    <button class="tab-btn" data-tab="privacyTab">Privacy</button>
+  </div>
+  
+  <!-- Profile Tab -->
+  <div class="tab-content" id="profileTab">
+    <h3>Profile</h3>
+    <form id="profileForm">
+      <label>Username</label>
+      <input type="text" id="profileUsername" required>
+      <label>Email</label>
+      <input type="email" id="profileEmail" required>
+      <label>Password</label>
+      <input type="password" id="profilePassword" required>
+      <label>Bio</label>
+      <textarea id="profileBio" rows="3" placeholder="About you..."></textarea>
+      <button type="submit">Save Profile</button>
+    </form>
+  </div>
+
+  <!-- Player Preferences Tab -->
+  <div class="tab-content" id="playerTab" style="display:none;">
+    <h3>Player Preferences</h3>
+    <label><input type="checkbox" id="darkModeToggle"> Dark Mode</label>
+    <label><input type="checkbox" id="autoplayToggle"> Autoplay</label>
+    <label>Playback Quality
+      <select id="qualitySelect">
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+      </select>
+    </label>
+    <label><input type="checkbox" id="explicitFilter"> Explicit Content Filter</label>
+  </div>
+
+  <!-- Notifications Tab -->
+  <div class="tab-content" id="notificationsTab" style="display:none;">
+    <h3>Notifications</h3>
+    <label><input type="checkbox" id="newMusicNotify"> New Music Alerts</label>
+    <label><input type="checkbox" id="commentsNotify"> Comments / Messages</label>
+    <label><input type="checkbox" id="emailNotify"> Email Notifications</label>
+    <label><input type="checkbox" id="pushNotify"> Push Notifications</label>
+  </div>
+
+  <!-- Privacy & Security Tab -->
+  <div class="tab-content" id="privacyTab" style="display:none;">
+    <h3>Privacy & Security</h3>
+    <label><input type="checkbox" id="privateProfile"> Private Profile</label>
+    <label><input type="password" id="changePassword" placeholder="Change Password"></label>
+    <button id="logoutBtn" type="button">Logout</button>
+  </div>
+</div>
+
+<style>
+:root {
+  --accent: #ff6a00;
+  --accent2: #ff9a3c;
+  --panel: #111218;
+  --panel2: #181a22;
+  --text: #f1f3f8;
+  --muted: #9aa0b3;
+}
+
+/* Settings Icon (same as previous) */
+.settings-icon {
+  width: 50px;
+  height: 50px;
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  cursor: pointer;
+  z-index: 1000;
+  border-radius: 50%;
+  background: rgba(24,26,34,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.settings-icon:hover { transform: scale(1.1); box-shadow: 0 10px 25px rgba(0,0,0,0.5); animation: spin 1s linear infinite;}
+.settings-icon::before, .settings-icon::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 4px;
+  background: var(--accent);
+  border-radius: 2px;
+  top: 50%;
+  left: 50%;
+  transform-origin: center;
+}
+.settings-icon::before { transform: translate(-50%, -50%) rotate(0deg);}
+.settings-icon::after { transform: translate(-50%, -50%) rotate(90deg);}
+.settings-icon div {
+  width: 12px; height: 12px; background: var(--accent); border-radius: 50%;
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+}
+@keyframes spin {0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);}}
+
+/* Settings Panel */
+#settingsPanel {
+  position: fixed;
+  bottom: 80px;
+  left: 20px;
+  width: 300px;
+  background: rgba(24,26,34,0.95);
+  backdrop-filter: blur(12px);
+  padding: 15px;
+  border-radius: 16px;
+  box-shadow: 0 12px 35px rgba(0,0,0,0.6);
+  display: none;
+  z-index: 2000;
+  color: var(--text);
+  font-family: Inter, system-ui;
+}
+
+/* Tabs */
+.settings-tabs {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.tab-btn {
+  flex: 1;
+  padding: 6px;
+  margin: 0 2px;
+  background: var(--panel2);
+  border: none;
+  border-radius: 8px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: 0.2s;
+}
+.tab-btn.active { background: var(--accent); color: white; }
+.tab-content { display: flex; flex-direction: column; gap: 8px; }
+.tab-content h3 { margin-bottom: 6px; color: var(--accent); }
+.tab-content input, .tab-content select, .tab-content textarea, .tab-content button {
+  padding: 8px; border-radius: 6px; border: none; outline: none; background: var(--panel2); color: white;
+}
+.tab-content button {
+  background: linear-gradient(135deg, var(--accent), var(--accent2)); font-weight: bold; cursor: pointer;
+  transition: 0.3s;
+}
+.tab-content button:hover { transform: scale(1.05); }
+</style>
+
+<script>
+// Toggle panel visibility
+const settingsIcon = document.querySelector(".settings-icon");
+const settingsPanel = document.getElementById("settingsPanel");
+settingsIcon.addEventListener("click", ()=>{
+  settingsPanel.style.display = settingsPanel.style.display === "block" ? "none" : "block";
+});
+
+// Tab switching
+const tabBtns = document.querySelectorAll(".tab-btn");
+const tabContents = document.querySelectorAll(".tab-content");
+
+tabBtns.forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    tabBtns.forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    tabContents.forEach(c=>c.style.display = "none");
+    document.getElementById(btn.dataset.tab).style.display = "flex";
+  });
+});
+
+// Example user data
+let user = {
+  username: "john_doe",
+  email: "john@example.com",
+  password: "password123",
+  bio: "I love music!",
+  darkMode: false,
+  autoplay: true,
+  quality: "high",
+  explicitFilter: true,
+  notifications: {
+    newMusic: true,
+    comments: true,
+    email: false,
+    push: true
+  },
+  privateProfile: false
+};
+
+// Populate form fields
+document.getElementById("profileUsername").value = user.username;
+document.getElementById("profileEmail").value = user.email;
+document.getElementById("profilePassword").value = user.password;
+document.getElementById("profileBio").value = user.bio;
+document.getElementById("darkModeToggle").checked = user.darkMode;
+document.getElementById("autoplayToggle").checked = user.autoplay;
+document.getElementById("qualitySelect").value = user.quality;
+document.getElementById("explicitFilter").checked = user.explicitFilter;
+document.getElementById("newMusicNotify").checked = user.notifications.newMusic;
+document.getElementById("commentsNotify").checked = user.notifications.comments;
+document.getElementById("emailNotify").checked = user.notifications.email;
+document.getElementById("pushNotify").checked = user.notifications.push;
+document.getElementById("privateProfile").checked = user.privateProfile;
+
+// Save profile changes
+document.getElementById("profileForm").addEventListener("submit", e=>{
+  e.preventDefault();
+  user.username = document.getElementById("profileUsername").value;
+  user.email = document.getElementById("profileEmail").value;
+  user.password = document.getElementById("profilePassword").value;
+  user.bio = document.getElementById("profileBio").value;
+  alert("Profile updated!");
+});
+
+// Optional: Logout button
+document.getElementById("logoutBtn").addEventListener("click", ()=>{
+  alert("Logging out...");
+  // Implement logout logic here
+});
+</script>
