@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home Page</title>
+
+  <style>
+    /* ===== Page base ===== */
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      font-family: Arial, sans-serif;
+      color: white;
+    }
+
+    /* ===== Full-page background image ===== */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: url("pexels-catota-3756766.jpg");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      z-index: -1;
+    }
+
+    /* ===== Left sidebar ===== */
+    .left-sidebar {
+      position: fixed;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 0.5in;
+      height: 4in;
+      background-color: rgba(255, 255, 255, 0);
+      justify-content: center;
+      align-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(4px); /* subtle glass effect */
+    }
+
+    /* ===== Icon boxes ===== */
+    .icon-box {
+      width: 100%;
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.25s, filter 0.25s;
+    }
+
+    .icon-box:hover {
+      transform: scale(1.25);
+      filter: drop-shadow(0 0 6px rgba(255,255,255,0.8));
+    }
+
+    .icon-box img {
+      max-width: 80%;
+      max-height: 80%;
+    }
+
+    /* ===== Main content ===== */
+    .main-content {
+      margin-left: 0.8in;
+      padding: 40px;
+      text-shadow: 1px 1px 6px rgba(0,0,0,0.8);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Sidebar -->
+  <div class="left-sidebar">
+    <div class="icon-box"><img src="home.png" alt="home"></div>
+    <div class="icon-box"><img src="user-gear.png" alt="Settings"></div>
+    <div class="icon-box"><img src="envelope-dot.png" alt="Notifications"></div>
+    <div class="icon-box"><img src="circle-user.png" alt="Profile"></div>
+    <div class="icon-box"><img src="growth-audience.png" alt="iSight"></div>
+    <div class="icon-box"><img src="messages.png" alt="Messages"></div>
+  </div>
+
+  <!-- Main content -->
+  <div class="main-content">
+    <h1>Welcome to Your Home Page</h1>
+    <p>Listen,Upload,download and enjoy the malawian music.</p>
+    
+  </div>
+
+</body>
+</html>

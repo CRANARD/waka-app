@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Register - Waka Multimedia</title>
+<style>
+  body, html {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: url('pexels-bri-schneiter-28802-346529.jpg') no-repeat center center fixed;
+    background-size: cover;
+  }
+
+  #loginBox {
+    width: 5in;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    backdrop-filter: blur(10px);
+    text-align: center;
+  }
+
+  /* Make ALL fields identical width */
+  #loginBox input,
+  #loginBox select,
+  #loginBox button {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+  }
+
+  #loginBox button {
+    background-color: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+  }
+
+  #loginBox button:hover {
+    background-color: rgba(255, 255, 255, 0.5);
+  }
+
+  h2 {
+    margin-bottom: 20px;
+    color: white;
+    text-shadow: 1px 1px 2px black;
+  }
+</style>
+</head>
+<body>
+
+<div id="loginBox">
+  <h2>Register</h2>
+  <form id="registerForm">
+
+    <!-- Email instead of username -->
+    
+	<input name="txt" type="txt" placeholder="Full Name" required>
+	<input name="txt" type="txt" placeholder="Uer Name" required>
+	<input name="email" type="email" placeholder="Email" required>
+	<input type="tel" name="phone" placeholder="Phone Number" pattern="[0-9]{10,15}" required>
+
+
+
+    <!-- Gender -->
+    <select name="gender" required>
+      <option value="">Select Gender</option>
+      <option value="male">Male</option>
+      <option value="female">Female</option>
+      <option value="other">Other</option>
+    </select>
+
+    <!-- Country -->
+    <select name="country" required>
+      <option value="">Select Country</option>
+      <option>Afghanistan</option>
+      <option>Albania</option>
+      <option>Algeria</option>
+      <option>Andorra</option>
+      <option>Angola</option>
+      <option>Argentina</option>
+      <option>Armenia</option>
+      <option>Australia</option>
+      <option>Austria</option>
+      <option>Azerbaijan</option>
+      <option>Bahamas</option>
+      <option>Bahrain</option>
+      <option>Bangladesh</option>
+      <option>Barbados</option>
+      <option>Belarus</option>
+      <option>Belgium</option>
+      <option>Belize</option>
+      <option>Benin</option>
+      <option>Bhutan</option>
+      <option>Bolivia</option>
+      <option>Botswana</option>
+      <option>Brazil</option>
+      <option>Brunei</option>
+      <option>Bulgaria</option>
+      <option>Burkina Faso</option>
+      <option>Burundi</option>
+      <option>Cambodia</option>
+      <option>Cameroon</option>
+      <option>Canada</option>
+      <option>Chad</option>
+      <option>Chile</option>
+      <option>China</option>
+      <option>Colombia</option>
+      <option>Comoros</option>
+      <option>Congo</option>
+      <option>Costa Rica</option>
+      <option>Croatia</option>
+      <option>Cuba</option>
+      <option>Cyprus</option>
+      <option>Czech Republic</option>
+      <option>Denmark</option>
+      <option>Djibouti</option>
+      <option>Dominica</option>
+      <option>Egypt</option>
+      <option>Estonia</option>
+      <option>Ethiopia</option>
+      <option>Finland</option>
+      <option>France</option>
+      <option>Gabon</option>
+      <option>Gambia</option>
+      <option>Georgia</option>
+      <option>Germany</option>
+      <option>Ghana</option>
+      <option>Greece</option>
+      <option>Guatemala</option>
+      <option>Guinea</option>
+      <option>Haiti</option>
+      <option>Honduras</option>
+      <option>Hungary</option>
+      <option>Iceland</option>
+      <option>India</option>
+      <option>Indonesia</option>
+      <option>Iran</option>
+      <option>Iraq</option>
+      <option>Ireland</option>
+      <option>Israel</option>
+      <option>Italy</option>
+      <option>Jamaica</option>
+      <option>Japan</option>
+      <option>Jordan</option>
+      <option>Kazakhstan</option>
+      <option>Kenya</option>
+      <option>Kuwait</option>
+      <option>Latvia</option>
+      <option>Lebanon</option>
+      <option>Lesotho</option>
+      <option>Liberia</option>
+      <option>Libya</option>
+      <option>Lithuania</option>
+      <option>Luxembourg</option>
+      <option>Madagascar</option>
+      <option>Malawi</option>
+      <option>Malaysia</option>
+      <option>Mali</option>
+      <option>Malta</option>
+      <option>Mauritius</option>
+      <option>Mexico</option>
+      <option>Morocco</option>
+      <option>Mozambique</option>
+      <option>Namibia</option>
+      <option>Nepal</option>
+      <option>Netherlands</option>
+      <option>New Zealand</option>
+      <option>Nigeria</option>
+      <option>Norway</option>
+      <option>Oman</option>
+      <option>Pakistan</option>
+      <option>Panama</option>
+      <option>Paraguay</option>
+      <option>Peru</option>
+      <option>Philippines</option>
+      <option>Poland</option>
+      <option>Portugal</option>
+      <option>Qatar</option>
+      <option>Romania</option>
+      <option>Russia</option>
+      <option>Rwanda</option>
+      <option>Saudi Arabia</option>
+      <option>Senegal</option>
+      <option>Serbia</option>
+      <option>Seychelles</option>
+      <option>Sierra Leone</option>
+      <option>Singapore</option>
+      <option>Slovakia</option>
+      <option>Slovenia</option>
+      <option>Somalia</option>
+      <option>South Africa</option>
+      <option>South Korea</option>
+      <option>Spain</option>
+      <option>Sri Lanka</option>
+      <option>Sudan</option>
+      <option>Sweden</option>
+      <option>Switzerland</option>
+      <option>Syria</option>
+      <option>Tanzania</option>
+      <option>Thailand</option>
+      <option>Togo</option>
+      <option>Tunisia</option>
+      <option>Turkey</option>
+      <option>Uganda</option>
+      <option>Ukraine</option>
+      <option>United Arab Emirates</option>
+      <option>United Kingdom</option>
+      <option>United States</option>
+      <option>Zambia</option>
+      <option>Zimbabwe</option>
+    </select>
+
+    <input name="password" type="password" placeholder="Password" required>
+    <input name="confirm" type="password" placeholder="Confirm Password" required>
+
+    <button type="submit">Register</button>
+  </form>
+</div>
+
+<script>
+document.getElementById('registerForm').onsubmit = async e => {
+  e.preventDefault();
+
+  if (e.target.password.value !== e.target.confirm.value) {
+    alert("Passwords do not match");
+    return;
+  }
+
+  const res = await fetch('/api/register', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      email: e.target.email.value,
+      gender: e.target.gender.value,
+      country: e.target.country.value,
+      password: e.target.password.value
+    })
+  });
+
+  const data = await res.json();
+  alert('Registered successfully!');
+};
+</script>
+
+</body>
+</html>
