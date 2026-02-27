@@ -108,7 +108,85 @@ app.post("/register", async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 });
+// === External Chart Routes ===
 
+// Top Songs from Last.fm
+app.get("/api/top-songs", async (req, res) => {
+  try {
+    const apiKey = "YOUR_LASTFM_API_KEY"; // replace with your key
+    const response = await fetch(
+      `http://ws.audioscrobbler.com/2.0/?method=chart.gettoptracks&api_key=${apiKey}&format=json`
+    );
+    const data = await response.json();
+
+    const tracks = data.tracks.track.map((t, i) => ({
+      title: t.name,
+      artist: t.artist.name,
+      cover: t.image[2]["#text"] || "/covers/default.png"
+    }));
+
+    res.json(tracks);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch top songs" });
+  }
+});
+
+// Top Albums from Last.fm
+app.get("/api/top-albums", async (req, res) => {
+  try {
+    const apiKey = "d43e9bc3bb4f3f32057856b8fe07173d";
+    const response = await fetch(
+      `http://ws.audioscrobbler.com/2.0/?method=chart.gettopalbums&api_key=${apiKey}&format=json`
+    );
+    const data = await response.json();
+
+    const albums = data.albums.album.map((a, i) => ({
+      title: a.name,
+      artist: a.artist.name,
+      cover: a.image[2]["#text"] || "/covers/default.png"
+    }));
+
+    res.json(albums);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch top albums" });
+  }
+});
+
+// Top Malawi Tracks from Last.fm
+app.get("/api/top-malawi", async (req, res) => {
+  try {
+    const apiKey = "YOUR_LASTFM_API_KEY";
+    const response = await fetch(
+      `http://ws.audioscrobbler.com/2.0/?method=geo.gettoptracks&country=Malawi&api_key=${apiKey}&format=json`
+    );
+    const data = await response.json();
+
+    const malawiTracks = data.tracks.track.map((t, i) => ({
+      title: t.name,
+      artist: t.artist.name,
+      cover: t.image[2]["#text"] || "/covers/default.png"
+    }));
+
+    res.json(malawiTracks);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch Malawi tracks" });
+  }
+});
+
+// Top Made on Monday (from your DB)
+app.get("/api/top-monday", (req, res) => {
+  db.all(
+    "SELECT id, title, artist, cover, plays FROM tracks WHERE top_monday = 1 ORDER BY plays DESC LIMIT 20",
+    [],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: "Failed to fetch Monday tracks" });
+      res.json(rows);
+    }
+  );
+});
 // ===============================
 // LOGIN ROUTE
 // ===============================
