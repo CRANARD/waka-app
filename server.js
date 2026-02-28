@@ -5,10 +5,11 @@
 const express = require("express");
 const cors = require("cors");
 const sqlite3 = require("sqlite3").verbose();
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs"); // bcryptjs for hashing
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const fetch = require("node-fetch"); // required for Node.js fetch
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,11 +28,8 @@ app.use(express.static("public"));
 // Database Setup
 // ===============================
 const db = new sqlite3.Database("./database.db", (err) => {
-    if (err) {
-        console.error("Database error:", err.message);
-    } else {
-        console.log("Connected to SQLite database.");
-    }
+    if (err) console.error("Database error:", err.message);
+    else console.log("Connected to SQLite database.");
 });
 
 // Create Users Table if not exists
@@ -45,23 +43,32 @@ db.run(`
     )
 `);
 
+// Create Tracks Table if not exists (for top-monday)
+db.run(`
+    CREATE TABLE IF NOT EXISTS tracks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT,
+        artist TEXT,
+        cover TEXT,
+        plays INTEGER DEFAULT 0,
+        top_monday INTEGER DEFAULT 0
+    )
+`);
+
 // ===============================
-// File Upload Setup (Optional)
+// File Upload Setup
 // ===============================
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         const uploadPath = "./uploads";
-        if (!fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath);
-        }
+        if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath);
         cb(null, uploadPath);
     },
     filename: function (req, file, cb) {
         cb(null, Date.now() + path.extname(file.originalname));
     }
 });
-
-const upload = multer({ storage: storage });
+const upload = multer({ storage });
 
 // ===============================
 // ROUTES
@@ -84,11 +91,7 @@ app.post("/register", async (req, res) => {
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-
-        const query = `
-            INSERT INTO users (fullname, email, password)
-            VALUES (?, ?, ?)
-        `;
+        const query = `INSERT INTO users (fullname, email, password) VALUES (?, ?, ?)`;
 
         db.run(query, [fullname, email, hashedPassword], function (err) {
             if (err) {
@@ -108,85 +111,7 @@ app.post("/register", async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 });
-// === External Chart Routes ===
 
-// Top Songs from Last.fm
-app.get("/api/top-songs", async (req, res) => {
-  try {
-    const apiKey = "YOUR_LASTFM_API_KEY"; // replace with your key
-    const response = await fetch(
-      `http://ws.audioscrobbler.com/2.0/?method=chart.gettoptracks&api_key=${apiKey}&format=json`
-    );
-    const data = await response.json();
-
-    const tracks = data.tracks.track.map((t, i) => ({
-      title: t.name,
-      artist: t.artist.name,
-      cover: t.image[2]["#text"] || "/covers/default.png"
-    }));
-
-    res.json(tracks);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch top songs" });
-  }
-});
-
-// Top Albums from Last.fm
-app.get("/api/top-albums", async (req, res) => {
-  try {
-    const apiKey = "d43e9bc3bb4f3f32057856b8fe07173d";
-    const response = await fetch(
-      `http://ws.audioscrobbler.com/2.0/?method=chart.gettopalbums&api_key=${apiKey}&format=json`
-    );
-    const data = await response.json();
-
-    const albums = data.albums.album.map((a, i) => ({
-      title: a.name,
-      artist: a.artist.name,
-      cover: a.image[2]["#text"] || "/covers/default.png"
-    }));
-
-    res.json(albums);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch top albums" });
-  }
-});
-
-// Top Malawi Tracks from Last.fm
-app.get("/api/top-malawi", async (req, res) => {
-  try {
-    const apiKey = "YOUR_LASTFM_API_KEY";
-    const response = await fetch(
-      `http://ws.audioscrobbler.com/2.0/?method=geo.gettoptracks&country=Malawi&api_key=${apiKey}&format=json`
-    );
-    const data = await response.json();
-
-    const malawiTracks = data.tracks.track.map((t, i) => ({
-      title: t.name,
-      artist: t.artist.name,
-      cover: t.image[2]["#text"] || "/covers/default.png"
-    }));
-
-    res.json(malawiTracks);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch Malawi tracks" });
-  }
-});
-
-// Top Made on Monday (from your DB)
-app.get("/api/top-monday", (req, res) => {
-  db.all(
-    "SELECT id, title, artist, cover, plays FROM tracks WHERE top_monday = 1 ORDER BY plays DESC LIMIT 20",
-    [],
-    (err, rows) => {
-      if (err) return res.status(500).json({ error: "Failed to fetch Monday tracks" });
-      res.json(rows);
-    }
-  );
-});
 // ===============================
 // LOGIN ROUTE
 // ===============================
@@ -200,19 +125,11 @@ app.post("/login", (req, res) => {
     const query = `SELECT * FROM users WHERE email = ?`;
 
     db.get(query, [email], async (err, user) => {
-        if (err) {
-            return res.status(500).json({ message: "Database error" });
-        }
-
-        if (!user) {
-            return res.status(400).json({ message: "Invalid email or password" });
-        }
+        if (err) return res.status(500).json({ message: "Database error" });
+        if (!user) return res.status(400).json({ message: "Invalid email or password" });
 
         const match = await bcrypt.compare(password, user.password);
-
-        if (!match) {
-            return res.status(400).json({ message: "Invalid email or password" });
-        }
+        if (!match) return res.status(400).json({ message: "Invalid email or password" });
 
         res.json({
             message: "Login successful",
@@ -226,12 +143,84 @@ app.post("/login", (req, res) => {
 });
 
 // ===============================
-// Example File Upload Route
+// External Chart Routes
+// ===============================
+const LASTFM_KEY = "d43e9bc3bb4f3f32057856b8fe07173d"; // your real API key
+
+// Top Songs
+app.get("/api/top-songs", async (req, res) => {
+    try {
+        const response = await fetch(`http://ws.audioscrobbler.com/2.0/?method=chart.gettoptracks&api_key=${LASTFM_KEY}&format=json`);
+        const data = await response.json();
+
+        const tracks = (data.tracks && data.tracks.track) ? data.tracks.track.map(t => ({
+            title: t.name || "Unknown",
+            artist: t.artist?.name || "Unknown",
+            cover: t.image?.[2]?.["#text"] || "/covers/default.png"
+        })) : [];
+
+        res.json(tracks);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to fetch top songs" });
+    }
+});
+
+// Top Albums
+app.get("/api/top-albums", async (req, res) => {
+    try {
+        const response = await fetch(`http://ws.audioscrobbler.com/2.0/?method=chart.gettopalbums&api_key=${LASTFM_KEY}&format=json`);
+        const data = await response.json();
+
+        const albums = (data.albums && data.albums.album) ? data.albums.album.map(a => ({
+            title: a.name || "Unknown",
+            artist: a.artist?.name || "Unknown",
+            cover: a.image?.[2]?.["#text"] || "/covers/default.png"
+        })) : [];
+
+        res.json(albums);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to fetch top albums" });
+    }
+});
+
+// Top Malawi Tracks
+app.get("/api/top-malawi", async (req, res) => {
+    try {
+        const response = await fetch(`http://ws.audioscrobbler.com/2.0/?method=geo.gettoptracks&country=Malawi&api_key=${LASTFM_KEY}&format=json`);
+        const data = await response.json();
+
+        const malawiTracks = (data.tracks && data.tracks.track) ? data.tracks.track.map(t => ({
+            title: t.name || "Unknown",
+            artist: t.artist?.name || "Unknown",
+            cover: t.image?.[2]?.["#text"] || "/covers/default.png"
+        })) : [];
+
+        res.json(malawiTracks);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to fetch Malawi tracks" });
+    }
+});
+
+// Top Made on Monday (from DB)
+app.get("/api/top-monday", (req, res) => {
+    db.all(
+        "SELECT id, title, artist, cover, plays FROM tracks WHERE top_monday = 1 ORDER BY plays DESC LIMIT 20",
+        [],
+        (err, rows) => {
+            if (err) return res.status(500).json({ error: "Failed to fetch Monday tracks" });
+            res.json(rows);
+        }
+    );
+});
+
+// ===============================
+// File Upload Route (example)
 // ===============================
 app.post("/upload", upload.single("file"), (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ message: "No file uploaded" });
-    }
+    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
 
     res.json({
         message: "File uploaded successfully",
