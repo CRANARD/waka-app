@@ -3,10 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Home Page</title>
+<title>WAKA MULTIMEDIA</title>
 
 <style>
-
 /* ===== Base ===== */
 html, body {
   margin: 0;
@@ -14,6 +13,7 @@ html, body {
   min-height: 100%;
   font-family: Arial, sans-serif;
   color: white;
+  background: #000;
 }
 
 /* ===== Background ===== */
@@ -26,9 +26,10 @@ body::before {
   background-position: center;
   background-repeat: no-repeat;
   z-index: -1;
+  filter: brightness(0.5);
 }
 
-/* ===== SAFE CONTAINER ===== */
+/* ===== Container ===== */
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -36,7 +37,7 @@ body::before {
   box-sizing: border-box;
 }
 
-/* ===== HEADER ===== */
+/* ===== Header ===== */
 .header {
   display: flex;
   align-items: center;
@@ -44,6 +45,9 @@ body::before {
   padding: 15px 0;
   background: rgba(0,0,0,0.6);
   backdrop-filter: blur(8px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .logo {
@@ -55,7 +59,6 @@ body::before {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: gradientMove 4s linear infinite;
-  margin: 0;
 }
 
 @keyframes gradientMove {
@@ -134,66 +137,78 @@ body::before {
 
 /* Main Content */
 .main-content {
-  padding: 100px 0 40px 0;
+  padding: 40px 0;
+  text-align: center;
 }
 
-/* ===== MUSIC GRID ===== */
+/* Headings */
+.main-content h1 {
+  margin-bottom: 5px;
+  font-size: 36px;
+}
+
+.main-content p {
+  margin-bottom: 30px;
+  font-size: 18px;
+}
+
+/* Music Grid */
 #musicList {
   display: grid;
-  grid-template-columns: repeat(4, 2in); /* 4 cards per row, 2 inches width each */
-  grid-auto-rows: 2.3in; /* Height 2.3 inches */
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px;
-  justify-content: center;
+  margin-top: 20px;
 }
 
+/* Music Card */
 .song {
-  background: rgba(0,0,0,0.7);
-  border-radius: 0px;
-  padding: 0px;
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  background: rgba(0,0,0,0.7);
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
   overflow: hidden;
+  transition: transform 0.3s, box-shadow 0.3s;
 }
 
+.song:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.7);
+}
+
+/* Cover Image */
 .song img {
   width: 100%;
-  height: 1.2in;
+  height: 150px;
   object-fit: cover;
-  border-radius: 8px;
 }
 
+/* Song Info */
 .song-info {
-  text-align: center;
-  margin: 8px 0;
-  font-size: 0.85rem;
-}
-
-.song-buttons {
+  padding: 10px 15px;
   display: flex;
+  flex-direction: column;
   gap: 5px;
-  margin-top: auto;
 }
 
-.song-buttons button {
-  flex: 1;
-  padding: 5px;
-  font-size: 0.75rem;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  background: #00f2ff;
-  color: black;
-  font-weight: bold;
-  transition: 0.3s;
+.song-info b {
+  font-size: 18px;
+  color: #00f0ff;
 }
 
-.song-buttons button:hover {
-  background: white;
-  color: black;
+.song-info span {
+  font-size: 14px;
+  color: #fff;
 }
 
+/* Audio Player */
+.song audio {
+  width: 100%;
+  margin-top: 10px;
+  border-radius: 8px;
+  outline: none;
+  background: #222;
+}
 </style>
 </head>
 
@@ -203,7 +218,6 @@ body::before {
 
   <!-- HEADER -->
   <div class="header">
-
     <p class="logo">WAKA MULTIMEDIA</p>
 
     <div class="search-container">
@@ -227,28 +241,22 @@ body::before {
         </div>
       </div>
     </div>
-
   </div>
 
   <!-- MAIN CONTENT -->
   <div class="main-content">
-
     <h1>Welcome</h1>
     <p>Listen, upload, download and enjoy the Malawian music.</p>
 
     <h2>Latest Uploaded Music</h2>
 
-    <!-- MUSIC WILL LOAD HERE -->
     <div id="musicList">
       No music uploaded yet. Be the first to upload.
     </div>
-
   </div>
-
 </div>
 
 <script>
-
 /* Dropdown */
 function toggleDropdown(){
   document.getElementById("dropdownMenu").classList.toggle("show");
@@ -263,16 +271,12 @@ window.onclick = function(event) {
   }
 }
 
-/* LOAD MUSIC FROM SERVER */
+/* Load Music from Server */
 async function loadMusic(){
-
   try{
-
-    const response = await fetch("/music");
+    const response = await fetch("/music"); // ensure server route sends JSON with {title, artist, filename, cover}
     const songs = await response.json();
-
     const musicList = document.getElementById("musicList");
-
     musicList.innerHTML = "";
 
     if(songs.length === 0){
@@ -280,49 +284,32 @@ async function loadMusic(){
       return;
     }
 
-    songs.forEach(song => {
-
+    songs.forEach((song) => {
       const div = document.createElement("div");
       div.className = "song";
 
+      const cover = song.cover || "https://via.placeholder.com/250x150?text=Music";
+
       div.innerHTML = `
-        <img src="/covers/${song.cover}" alt="${song.title} cover">
+        <img src="${cover}" alt="${song.title} cover">
         <div class="song-info">
-          <b>${song.title}</b><br>
-          ${song.artist}<br>
-          Released: ${song.release_date}<br>
-          Genre: ${song.genre}
-        </div>
-        <div class="song-buttons">
-          <button onclick="window.location.href='/uploads/${song.filename}'">Download</button>
-          <button onclick="shareSong('${song.title}', '${song.artist}')">Share</button>
-          <button onclick="likeSong('${song.title}')">Like</button>
+          <b>${song.title}</b>
+          <span>${song.artist}</span>
+          <audio controls>
+            <source src="/uploads/${song.filename}" type="audio/mpeg">
+          </audio>
         </div>
       `;
 
       musicList.appendChild(div);
-
     });
 
-  }
-  catch(err){
+  } catch(err){
     console.error("Error loading music:", err);
   }
-
-}
-
-/* Dummy functions for share/like */
-function shareSong(title, artist){
-  alert(`Share "${title}" by ${artist}`);
-}
-
-function likeSong(title){
-  alert(`You liked "${title}"`);
 }
 
 loadMusic();
-
 </script>
-
 </body>
 </html>
