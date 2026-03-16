@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,11 +29,11 @@ body::before {
   z-index: -1;
 }
 
-/* ===== SAFE CONTAINER (THIS FIXES BORDER ISSUE) ===== */
+/* ===== SAFE CONTAINER ===== */
 .container {
-  max-width: 1200px;      /* prevents stretching to edges */
-  margin: 0 auto;         /* center horizontally */
-  padding: 0 20px;        /* safe space from left & right */
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
   box-sizing: border-box;
 }
 
@@ -46,7 +47,6 @@ body::before {
   backdrop-filter: blur(8px);
 }
 
-
 .logo {
   font-size: 28px;
   font-weight: bold;
@@ -59,41 +59,9 @@ body::before {
   margin: 0;
 }
 
-/* Animated Gradient */
 @keyframes gradientMove {
   0% { background-position: 0%; }
   100% { background-position: 300%; }
-}
-
-/* Waveform */
-.waveform {
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  gap: 4px;
-  margin-top: 8px;
-  height: 25px;
-}
-
-.waveform span {
-  width: 4px;
-  height: 10px;
-  background: #00f0ff;
-  border-radius: 5px;
-  animation: wave 1s infinite ease-in-out;
-}
-
-.waveform span:nth-child(1) { animation-delay: 0s; }
-.waveform span:nth-child(2) { animation-delay: 0.1s; }
-.waveform span:nth-child(3) { animation-delay: 0.2s; }
-.waveform span:nth-child(4) { animation-delay: 0.3s; }
-.waveform span:nth-child(5) { animation-delay: 0.4s; }
-.waveform span:nth-child(6) { animation-delay: 0.5s; }
-.waveform span:nth-child(7) { animation-delay: 0.6s; }
-
-@keyframes wave {
-  0%, 100% { height: 10px; }
-  50% { height: 25px; }
 }
 
 /* Search */
@@ -165,10 +133,22 @@ body::before {
   background: rgba(255,255,255,0.2);
 }
 
-
 /* Main Content */
 .main-content {
   padding: 100px 0 40px 0;
+}
+
+/* MUSIC LIST STYLE (added) */
+.song {
+  margin-top: 20px;
+  padding: 15px;
+  background: rgba(0,0,0,0.6);
+  border-radius: 10px;
+}
+
+.song audio {
+  width: 100%;
+  margin-top: 10px;
 }
 
 </style>
@@ -209,15 +189,24 @@ body::before {
 
   <!-- MAIN CONTENT -->
   <div class="main-content">
-    <h1>Welcome </h1>
+
+    <h1>Welcome</h1>
     <p>Listen, upload, download and enjoy the Malawian music.</p>
+
+    <h2>Latest Uploaded Music</h2>
+
+    <!-- MUSIC WILL LOAD HERE -->
+    <div id="musicList">
+      No music uploaded yet. Be the first to upload.
+    </div>
+
   </div>
 
 </div>
 
-
-
 <script>
+
+/* Dropdown */
 function toggleDropdown(){
   document.getElementById("dropdownMenu").classList.toggle("show");
 }
@@ -230,6 +219,49 @@ window.onclick = function(event) {
     }
   }
 }
+
+/* LOAD MUSIC FROM SERVER */
+async function loadMusic(){
+
+  try{
+
+    const response = await fetch("/music");
+    const songs = await response.json();
+
+    const musicList = document.getElementById("musicList");
+
+    musicList.innerHTML = "";
+
+    if(songs.length === 0){
+      musicList.innerHTML = "No music uploaded yet.";
+      return;
+    }
+
+    songs.forEach(song => {
+
+      const div = document.createElement("div");
+      div.className = "song";
+
+      div.innerHTML = `
+        <b>${song.title}</b> - ${song.artist}
+        <audio controls>
+          <source src="/uploads/${song.filename}" type="audio/mpeg">
+        </audio>
+      `;
+
+      musicList.appendChild(div);
+
+    });
+
+  }
+  catch(err){
+    console.error("Error loading music:", err);
+  }
+
+}
+
+loadMusic();
+
 </script>
 
 </body>
