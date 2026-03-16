@@ -75,34 +75,34 @@
   <button id="forgotPassword">Forgot Password?</button>
 </div>
 
-<script>
-  // Forgot Password redirect
-  document.getElementById('forgotPassword').addEventListener('click', () => {
-    window.location.href = 'create-new-password.html';
-  });
 
-  // Login handler
-  document.getElementById('loginForm').addEventListener('submit', async e => {
+
+
+<script>
+document.getElementById('loginForm').addEventListener('submit', async e => {
     e.preventDefault();
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        username: e.target.username.value,
-        password: e.target.password.value
-      })
+    
+    const res = await fetch('/login', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+            email: e.target.email.value,
+            password: e.target.password.value
+        })
     });
 
     const data = await res.json();
 
     if(data.user){ 
-      localStorage.setItem('user', JSON.stringify(data.user));
-      alert('Login successful!');
-      window.location.href = 'home.html';
+        // Save user info locally
+        localStorage.setItem('user', JSON.stringify(data.user));
+        // Redirect to home page
+        window.location.href = 'home.html';
     } else {
-      alert('Login failed. Please check your credentials.');
+        alert(data.message || 'Login failed. Please check your credentials.');
     }
-  });
+});
+</script>
 </script>
 
 </body>

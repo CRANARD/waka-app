@@ -1,332 +1,235 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<title>Waka Multimedia - Home</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home Page</title>
 
 <style>
-body, html {
+
+/* ===== Base ===== */
+html, body {
   margin: 0;
+  padding: 0;
+  min-height: 100%;
   font-family: Arial, sans-serif;
-  background: url('okay.png') no-repeat center center fixed;
-  background-size: cover;
   color: white;
-  overflow-x: hidden;
+}
+
+/* ===== Background ===== */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("pexels-catota-3756766.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: -1;
+}
+
+/* ===== SAFE CONTAINER (THIS FIXES BORDER ISSUE) ===== */
+.container {
+  max-width: 1200px;      /* prevents stretching to edges */
+  margin: 0 auto;         /* center horizontally */
+  padding: 0 20px;        /* safe space from left & right */
+  box-sizing: border-box;
+}
+
+/* ===== HEADER ===== */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px);
+}
+
+
+.logo {
+  font-size: 28px;
+  font-weight: bold;
+  letter-spacing: 3px;
+  background: linear-gradient(90deg, #00f0ff, #ff00f7, #00f0ff);
+  background-size: 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientMove 4s linear infinite;
+  margin: 0;
+}
+
+/* Animated Gradient */
+@keyframes gradientMove {
+  0% { background-position: 0%; }
+  100% { background-position: 300%; }
+}
+
+/* Waveform */
+.waveform {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 4px;
+  margin-top: 8px;
+  height: 25px;
+}
+
+.waveform span {
+  width: 4px;
+  height: 10px;
+  background: #00f0ff;
+  border-radius: 5px;
+  animation: wave 1s infinite ease-in-out;
+}
+
+.waveform span:nth-child(1) { animation-delay: 0s; }
+.waveform span:nth-child(2) { animation-delay: 0.1s; }
+.waveform span:nth-child(3) { animation-delay: 0.2s; }
+.waveform span:nth-child(4) { animation-delay: 0.3s; }
+.waveform span:nth-child(5) { animation-delay: 0.4s; }
+.waveform span:nth-child(6) { animation-delay: 0.5s; }
+.waveform span:nth-child(7) { animation-delay: 0.6s; }
+
+@keyframes wave {
+  0%, 100% { height: 10px; }
+  50% { height: 25px; }
+}
+
+/* Search */
+.search-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.search-container input {
+  width: 70%;
+  max-width: 400px;
+  padding: 10px 15px;
+  border-radius: 25px;
+  border: none;
+  outline: none;
 }
 
 /* Navigation */
-nav {
+.nav-buttons {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 40px;
-  background: rgba(0,0,0,0.3);
-  backdrop-filter: blur(10px);
+  gap: 10px;
 }
 
-nav h1 {
-  font-size: 1.8em;
-}
-
-.nav-links button {
-  margin-left: 15px;
-  padding: 8px 15px;
-  border-radius: 25px;
+.nav-buttons button {
+  padding: 8px 14px;
+  border-radius: 20px;
   border: none;
-  background: rgba(29,185,84,0.8);
-  color: white;
-  font-weight: bold;
   cursor: pointer;
+  font-weight: bold;
+  background: #00f2ff;
+  transition: 0.3s;
 }
 
-.nav-links button:hover {
-  background: rgba(29,185,84,1);
-}
-
-/* Hero */
-.hero {
-  text-align: center;
-  padding: 60px 20px 40px;
-}
-
-.hero h2 {
-  font-size: 3em;
-  margin-bottom: 20px;
-}
-
-.hero input {
-  width: 500px;
-  max-width: 90%;
-  padding: 12px 15px;
-  border-radius: 25px;
-  border: none;
+.nav-buttons button:hover {
   background: white;
   color: black;
-  text-align: center;
 }
 
-/* Featured */
-.featuredSection {
-  display: flex;
-  gap: 25px;
-  padding: 40px;
-  justify-content: center;
-  flex-wrap: wrap;
+/* Dropdown */
+.dropdown {
+  position: relative;
 }
 
-.featuredCard {
-  width: 300px;
-  background: rgba(255,255,255,0.15);
-  backdrop-filter: blur(12px);
-  border-radius: 20px;
-  padding: 20px;
-  text-align: center;
-}
-
-.featuredCard img {
-  width: 100%;
-  height: 200px;
-  border-radius: 10px;
-  object-fit: cover;
-}
-
-.cardButtons {
-  margin-top: 10px;
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
-
-.cardButtons button {
-  padding: 6px 10px;
-  border-radius: 15px;
-  border: none;
-  background: rgba(29,185,84,0.9);
-  color: white;
-  cursor: pointer;
-}
-
-/* PLAYER BAR */
-.playerBar {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  background: rgba(0,0,0,0.85);
-  padding: 15px;
+.dropdown-content {
   display: none;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
+  position: absolute;
+  right: 0;
+  background: rgba(0,0,0,0.9);
+  border-radius: 10px;
+  padding: 10px;
+  min-width: 160px;
+  margin-top: 5px;
 }
 
-.controls {
-  display: flex;
-  gap: 20px;
-  align-items: center;
+.dropdown-content.show {
+  display: block;
 }
 
-.controls button {
-  padding: 8px 15px;
-  border-radius: 20px;
-  border: none;
-  background: rgba(29,185,84,0.9);
+.dropdown-content a {
+  display: block;
+  padding: 8px;
+  text-decoration: none;
   color: white;
-  cursor: pointer;
-}
-
-.progress-container {
-  width: 80%;
-  height: 6px;
-  background: rgba(255,255,255,0.3);
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.progress {
-  height: 100%;
-  width: 0%;
-  background: #1db954;
   border-radius: 5px;
 }
 
-.volume {
-  width: 150px;
+.dropdown-content a:hover {
+  background: rgba(255,255,255,0.2);
 }
+
+
+/* Main Content */
+.main-content {
+  padding: 100px 0 40px 0;
+}
+
 </style>
 </head>
 
 <body>
 
-<nav>
-  <h1>Waka Multimedia</h1>
-  <div class="nav-links">
-    <button onclick="location.href='home.html'">Home</button>
-    <button onclick="location.href='Discover.html'">Discover</button>
-    <button onclick="location.href='portfolio.html'">PortFolio</button>
-    <button onclick="location.href='upload.html'">Upload</button>
-    <button onclick="location.href='login.html'">Login</button>
-    <button onclick="location.href='register.html'">Register</button>
-  </div>
-</nav>
+<div class="container">
 
-<div class="hero">
-  <h2>Welcome to Waka Multimedia</h2>
-  <p>Discover, upload and enjoy music like never before!</p>
-  <input type="text" placeholder="Search music...">
+  <!-- HEADER -->
+  <div class="header">
+
+    <p class="logo">WAKA MULTIMEDIA</p>
+
+    <div class="search-container">
+      <input type="text" placeholder="Search music, artists...">
+    </div>
+
+    <div class="nav-buttons">
+      <button onclick="location.href='home.html'">Home</button>
+      <button onclick="location.href='Discover.html'">Discover</button>
+      <button onclick="location.href='upload.html'">Upload</button>
+
+      <div class="dropdown">
+        <button onclick="toggleDropdown()" id="accountBtn">Account ▼</button>
+        <div class="dropdown-content" id="dropdownMenu">
+          <a href="#">Profile</a>
+          <a href="#">My Playlists</a>
+          <a href="#">Settings</a>
+          <a href="#">Notifications</a>
+          <a href="#">Help Center</a>
+          <a href="#">Logout</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+    <h1>Welcome </h1>
+    <p>Listen, upload, download and enjoy the Malawian music.</p>
+  </div>
+
 </div>
 
-<div class="featuredSection" id="featuredSection"></div>
 
-<footer style="text-align:center;">
-  &copy; 2026 Waka Multimedia <br>
-  published by: Leonard Lestern
-</footer>
-
-<!-- PLAYER -->
-<div class="playerBar" id="playerBar">
-  <div id="nowPlaying"></div>
-
-  <div class="progress-container" id="progressContainer">
-    <div class="progress" id="progress"></div>
-  </div>
-
-  <div class="controls">
-    <button onclick="prevTrack()">⏮</button>
-    <button id="playPauseBtn">▶</button>
-    <button onclick="nextTrack()">⏭</button>
-    <input type="range" min="0" max="1" step="0.1" value="1" id="volumeSlider" class="volume">
-  </div>
-</div>
 
 <script>
-const audio = new Audio();
-let playlist = [];
-let current = 0;
+function toggleDropdown(){
+  document.getElementById("dropdownMenu").classList.toggle("show");
+}
 
-const playerBar = document.getElementById("playerBar");
-const playPauseBtn = document.getElementById("playPauseBtn");
-const progress = document.getElementById("progress");
-const progressContainer = document.getElementById("progressContainer");
-const volumeSlider = document.getElementById("volumeSlider");
-const featuredSection = document.getElementById("featuredSection");
-const nowPlaying = document.getElementById("nowPlaying");
-
-/* FETCH SONGS (LIMIT 10) */
-async function fetchSongs(){
-  try{
-    const response = await fetch("http://localhost:3000/api/songs");
-    const data = await response.json();
-    playlist = data.slice(0,10);
-    renderSongs();
-  }catch(err){
-    console.error(err);
+window.onclick = function(event) {
+  if (!event.target.matches('#accountBtn')) {
+    var dropdown = document.getElementById("dropdownMenu");
+    if (dropdown.classList.contains('show')) {
+      dropdown.classList.remove('show');
+    }
   }
 }
-
-function renderSongs(){
-  featuredSection.innerHTML = "";
-
-  if(playlist.length === 0){
-    const emptyCard = document.createElement("div");
-    emptyCard.className = "featuredCard";
-    emptyCard.innerHTML = `
-      <h3>No Music Uploaded Yet 🎵</h3>
-      <p>Be the first to upload music on Waka Multimedia.</p>
-    `;
-    featuredSection.appendChild(emptyCard);
-    return;
-  }
-
-  playlist.forEach((song,index)=>{
-    const card = document.createElement("div");
-    card.className = "featuredCard";
-
-    card.innerHTML = `
-      <img src="${song.cover}">
-      <h3>${song.title}</h3>
-      <p><strong>Artist:</strong> ${song.artist}</p>
-
-      <div class="cardButtons">
-        <button onclick="playSong(${index})">▶ Play</button>
-        <a href="${song.src}" download>
-          <button>⬇ Download</button>
-        </a>
-        <button onclick="shareSong('${song.title}')">🔗 Share</button>
-      </div>
-    `;
-
-    featuredSection.appendChild(card);
-  });
-}
-
-function playSong(index){
-  current = index;
-  audio.src = playlist[current].src;
-  nowPlaying.textContent =
-    playlist[current].title + " - " + playlist[current].artist;
-  audio.play();
-  playerBar.style.display = "flex";
-  playPauseBtn.textContent = "⏸";
-}
-
-playPauseBtn.addEventListener("click", ()=>{
-  if(audio.paused){
-    audio.play();
-    playPauseBtn.textContent = "⏸";
-  } else {
-    audio.pause();
-    playPauseBtn.textContent = "▶";
-  }
-});
-
-function nextTrack(){
-  current = (current+1)%playlist.length;
-  playSong(current);
-}
-
-function prevTrack(){
-  current = (current-1+playlist.length)%playlist.length;
-  playSong(current);
-}
-
-/* AUTO PLAY NEXT */
-audio.addEventListener("ended", ()=>{
-  nextTrack();
-});
-
-/* PROGRESS */
-audio.addEventListener("timeupdate", ()=>{
-  if(audio.duration){
-    const percent = (audio.currentTime/audio.duration)*100;
-    progress.style.width = percent+"%";
-  }
-});
-
-progressContainer.addEventListener("click",(e)=>{
-  const width = progressContainer.clientWidth;
-  const clickX = e.offsetX;
-  audio.currentTime = (clickX/width)*audio.duration;
-});
-
-/* VOLUME */
-volumeSlider.addEventListener("input", ()=>{
-  audio.volume = volumeSlider.value;
-});
-audio.volume = volumeSlider.value;
-
-/* SHARE */
-function shareSong(title){
-  if(navigator.share){
-    navigator.share({
-      title: title,
-      text: "Listen to " + title + " on Waka Multimedia"
-    });
-  } else {
-    alert("Sharing not supported on this device.");
-  }
-}
-
-fetchSongs();
 </script>
 
 </body>

@@ -116,17 +116,17 @@ app.post("/register", async (req, res) => {
 // LOGIN ROUTE
 // ===============================
 app.post("/login", (req, res) => {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
-    if (!email || !password) {
+    if (!username || !password) {
         return res.status(400).json({ message: "Email and password required" });
     }
 
     const query = `SELECT * FROM users WHERE email = ?`;
 
-    db.get(query, [email], async (err, user) => {
+    db.get(query, [username], async (err, user) => {
         if (err) return res.status(500).json({ message: "Database error" });
-        if (!user) return res.status(400).json({ message: "Invalid email or password" });
+        if (!user) return res.status(400).json({ message: "Invalid username or password" });
 
         const match = await bcrypt.compare(password, user.password);
         if (!match) return res.status(400).json({ message: "Invalid email or password" });
@@ -136,7 +136,7 @@ app.post("/login", (req, res) => {
             user: {
                 id: user.id,
                 fullname: user.fullname,
-                email: user.email
+                username: user.username,
             }
         });
     });
