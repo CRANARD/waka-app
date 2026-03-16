@@ -154,18 +154,71 @@ app.get("/music", (req, res) => {
 // ===============================
 // FILE UPLOAD
 // ===============================
-app.post("/upload", upload.single("file"), (req, res) => {
-    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+app.post("/api/upload", upload.fields([
+  { name: "audio", maxCount: 1 },
+  { name: "cover", maxCount: 1 }
+]), (req, res) => {
+  try {
+    if (!req.files || !req.files.audio) {
+      return res.status(400).json({ error: "Audio file is required" });
+    }
 
-    const { title, artist } = req.body;
+    const audioFile = req.files.audio[0];
+    const coverFile = req.files.cover ? req.files.cover[0] : null;
 
-    // save metadata to tracks table
-    const query = `INSERT INTO tracks (title, artist, filename) VALUES (?, ?, ?)`;
-    db.run(query, [title || path.parse(req.file.originalname).name, artist || "Unknown Artist", req.file.filename]);
+    // Extract metadata from form
+    const {
+      title,
+      artist,
+      album,
+      release_date,
+      language,
+      country,
+      genre,
+      explicit,
+      bpm
+    } = req.body;
 
-    res.json({ message: "File uploaded successfully", file: req.file.filename });
+    // Save metadata to DB
+    const query = `
+      INSERT INTO tracks (title, artist, filename, plays, top_monday, uploaded_at)
+      VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    `;
+    db.run(query, [
+      title || path.parse(audioFile.originalname).name,
+      artist || "Unknown Artist",
+      audioFile.filename,
+      bpm || 0,
+      explicit === "yes" ? 1 : 0
+    ], function (err) {
+      if (err) {
+        console.error("DB error:", err.message);
+        return res.status(500).json({ error: "Database error" });
+      }
+
+      res.json({
+        message: "Upload successful",
+        trackId: this.lastID,
+        audio: audioFile.filename,
+        cover: coverFile ? coverFile.filename : null,
+        metadata: {
+          title,
+          artist,
+          album,
+          release_date,
+          language,
+          country,
+          genre,
+          explicit,
+          bpm
+        }
+      });
+    });
+  } catch (err) {
+    console.error("Upload error:", err);
+    res.status(500).json({ error: "Server error during upload" });
+  }
 });
-
 // ===============================
 // START SERVER
 // ===============================
